@@ -1,0 +1,26 @@
+qualityGate:
+  coverage:
+    acceptedDeltaPercentage: 5
+    enabled: false
+  codeAnalysis:
+    highsLimit: 0
+    mediumsLimit: 0
+    lowsLimit: 0
+    spamThreshold: 10
+    enabled: true
+  JIRA:
+    enabled: false
+  reviewers:
+    minRequiredApprovals: 1
+reviewersRaffle:
+  strategies:
+    - owners:
+        type: sequential
+        size: 1
+        participants:
+          teams:
+            - Yapo/backend
+            - Yapo/data
+  dailyReminder: enabled
+slack:
+  - "#yapo_data"

@@ -1,0 +1,30 @@
+language: python
+matrix:
+  include:
+    - python: 3.7-dev
+      dist: xenial
+      sudo: true
+
+# This build should not be triggered by tags
+if: tags IS blank
+
+
+# Anything in install that returns a nonzero exit code will
+# flunk the build and immediately stop. It's sorta like having
+# set -e enabled in bash.
+
+before_script:
+  - export BUILD_BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
+  - echo "TRAVIS_BRANCH=$TRAVIS_BRANCH, TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST, BUILD_BRANCH=$BUILD_BRANCH"
+  - bash scripts/install-dependencies.sh
+  
+# script always run to completion (set +e). All of these code checks are must haves
+# in a modern Go project.
+script:
+  - bash scripts/build-module.sh
+after_failure:
+  - reports-publisher
+
+after_success:
+  - reports-publisher
+  - bash scripts/publish-module.sh
