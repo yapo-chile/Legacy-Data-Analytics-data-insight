@@ -9,7 +9,8 @@ from utils.read_params import ReadParams
 class Process():
     def __init__(self,
                  config,
-                 params: ReadParams) -> None:
+                 params: ReadParams,
+                 logger) -> None:
         self.config = config
         self.params = params
 
@@ -50,6 +51,7 @@ class Process():
         self.__data_athena = data_athena
 
     def generate(self):
+        self.logger.info("All good")
         self.data_dwh = self.config.db
         self.data_athena = self.config.athenaConf
         self.save()

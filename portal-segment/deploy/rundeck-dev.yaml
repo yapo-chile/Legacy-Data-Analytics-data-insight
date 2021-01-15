@@ -1,6 +1,6 @@
 - defaultTab: nodes
   description: |-
-        <Add specific URL or path of the pipeline in github>
+        Check stuff
         sudo docker run --rm --net=host \
                         -v /home/bnbiuser/secrets/pulse_auth:/app/pulse-secret \
                         -v /home/bnbiuser/secrets/dw_db:/app/db-secret \
@@ -8,13 +8,13 @@
                         -e APP_PULSE_SECRET=/app/pulse-secret \
                         -e APP_DB_SECRET=/app/db-secret \
                         -e APP_SMTP_SECRET=/app/smtp-secret \
-                        containers.mpi-internal.com/yapo/portal-segment:[git-branch] \
+                        containers.mpi-internal.com/yapo/portal-segment:feat_portal-segment \
                         -email_from="noreply@yapo.cl" \
                         -email_to="data_team@adevinta.com"
   executionEnabled: true
-  group: DOCKER/<FOLDER RUNDECK LOCATION>
+  group: DOCKER/INSIGHT
   loglevel: DEBUG
-  name: <FOLDER RUNDECK LOCATION> - Project Name Template
+  name: INSIGHT - Portal daily segmentation
   nodeFilterEditable: false
   nodefilters:
     dispatch:
@@ -30,7 +30,7 @@
   sequence:
     commands:
     - script: |-
-        sudo docker pull containers.mpi-internal.com/yapo/portal-segment:[git-branch]
+        sudo docker pull containers.mpi-internal.com/yapo/portal-segment:feat_portal-segment
         sudo docker run --rm --net=host \
                         -v /home/bnbiuser/secrets/pulse_auth:/app/pulse-secret \
                         -v /home/bnbiuser/secrets/dw_db:/app/db-secret \
@@ -38,7 +38,7 @@
                         -e APP_PULSE_SECRET=/app/pulse-secret \
                         -e APP_DB_SECRET=/app/db-secret \
                         -e APP_SMTP_SECRET=/app/smtp-secret \
-                        containers.mpi-internal.com/yapo/portal-segment:[git-branch] \
+                        containers.mpi-internal.com/yapo/portal-segment::feat_portal-segment \
                         -email_from="noreply@yapo.cl" \
                         -email_to="data_team@adevinta.com"
     keepgoing: false
