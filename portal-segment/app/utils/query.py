@@ -4,14 +4,97 @@
 
 class PortalSegmentQuery:
 
-    def query(self) -> str:
+    def re_segment_pyramid_yapo(self, variable_test) -> str:
         """
-        Method return str with query
+            Real state pyramic
         """
         query = """
-            select {0} {1} {2} {3}
-            """.format(self.params.get_date_from(),
-                       self.params.get_date_to(),
-                       self.params.get_current_year(),
-                       self.params.get_last_year())
-        return query
+            select
+            a.status_date,
+            a.ad_id_nk,
+            a.email,
+            a.price,
+            a.uf_price,
+            case
+                when a.uf_price >= 1 AND a.uf_price < 3000 then '0-3000UF'
+                when a.uf_price >= 3000 AND a.uf_price < 5000 then '3000-5000UF'
+                when a.uf_price >= 5000 AND a.uf_price < 7000 then '5000-7000UF'
+                when a.uf_price >= 7000 AND a.uf_price < 9000 then '7000-9000UF'
+                when a.uf_price >= 9000 then '9000UF+'
+                else null
+            end as price_interval,
+            a.category_id_fk,
+            a.doc_num,
+            a.integrador,
+            /*case
+                when a.integrador is not null and a.automotora is null then 'UNKNOWN'
+                else a.automotora
+            end as automotora,*/
+            case
+                when a.integrador is not null then 'Integrador'
+                when a.pack_id is not null then 'Pack'
+                when a.insfee_buyer = 'if_buyer' then 'Insertion Fee'
+                else null
+            end as ad_type,
+            case
+                when split_part(split_part(a.email,'@',2),'.',1) in ('gmail','hotmail','icloud','live','outlook','yahoo') then 'Publico'
+                else 'Privado'
+            end as email_provider
+        from(
+            select
+                aa.status_date,
+                a.ad_id_nk,
+                s.email,
+                a.price,
+                case
+                    when a.currency = 'peso' or a.currency is null then a.price / (select a.value from stg.currency a where date(date_time::date) = date({}) and a.money = 'UF')
+                    else a.price/100
+                end as uf_price,
+                a.category_id_fk,
+                p.doc_num,
+                p.pack_id,
+                bsd.link_type as integrador,
+                --bcs.automotora,
+                case when i.ad_id_fk is not null then 'if_buyer' else null end insfee_buyer
+            from
+                ods.active_ads aa
+            inner join
+                (select
+                    a.ad_id_pk,
+                    a.ad_id_nk,
+                    a.seller_id_fk,
+                    a.price,
+                    ap.currency,
+                    a.category_id_fk,
+                    'real_estate'::text as pack_vertical
+                from
+                    ods.ad a
+                left join
+                    ods.ads_inmo_params ap on ap.ad_id_nk = a.ad_id_nk
+                where
+                    category_id_fk::int in (47,48)
+                ) a on aa.ad_id_nk = a.ad_id_nk
+            left join
+                ods.packs p on ((a.seller_id_fk = p.seller_id_fk) and (aa.status_date between p.date_start and p.date_end) and (a.pack_vertical = p.category))
+            left join
+                (select
+                    ad_id_fk
+                from
+                    ods.product_order po
+                where
+                    product_id_fk in (23)
+                    and status in ('confirmed','paid','sent','failed')) i on a.ad_id_pk = i.ad_id_fk
+            left join
+                ods.seller s on a.seller_id_fk = s.seller_id_pk
+            left join
+                stg.big_sellers_detail bsd on a.ad_id_nk = bsd.ad_id_nk
+            --left join
+            --	ods.big_car_sellers_data bcs on s.email = bcs.email
+            ) a
+        where
+            (pack_id is not null
+            or insfee_buyer is not null
+            or integrador is not null)
+        group by 1,2,3,4,5,6,7,8,9,10,11
+        """.format(variable_test)
+

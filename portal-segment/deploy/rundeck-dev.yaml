@@ -14,7 +14,7 @@
   executionEnabled: true
   group: DOCKER/INSIGHT
   loglevel: DEBUG
-  name: INSIGHT - Portal daily segmentation
+  name: INSIGHT - Daily segmentation RE pyramids
   nodeFilterEditable: false
   nodefilters:
     dispatch:
@@ -38,7 +38,7 @@
                         -e APP_PULSE_SECRET=/app/pulse-secret \
                         -e APP_DB_SECRET=/app/db-secret \
                         -e APP_SMTP_SECRET=/app/smtp-secret \
-                        containers.mpi-internal.com/yapo/portal-segment::feat_portal-segment \
+                        containers.mpi-internal.com/yapo/portal-segment:feat_portal-segment \
                         -email_from="noreply@yapo.cl" \
                         -email_to="data_team@adevinta.com"
     keepgoing: false

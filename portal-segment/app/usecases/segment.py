@@ -2,6 +2,7 @@
 # utf-8
 import logging
 import pandas as pd
+import datetime from datetime
 from infraestructure.psql import Database
 from utils.query import PortalSegmentQuery
 from utils.read_params import ReadParams
@@ -18,31 +19,35 @@ class PortalSegment(PortalSegmentQuery):
 
     # Query data from data blocket
     @property
-    def blocket_data_reply(self):
-        return self.__blocket_data_reply
+    def dwh_re_data_yapo_pyramid(self):
+        return self.__dwh_re_data_yapo_pyramid
 
-    @blocket_data_reply.setter
-    def blocket_data_reply(self, config):
+    @dwh_re_data_yapo_pyramid.setter
+    def dwh_re_data_yapo_pyramid(self, config):
         db_source = Database(conf=config)
-        blocket_data_reply = db_source.select_to_dict(self.blocket_ad_reply())
+        dwh_re_data_yapo_pyramid = db_source.select_to_dict(self.re_segment_pyramid_yapo(
+            datetime.datetime.now().date()
+            )
+        )
         db_source.close_connection()
-        self.__blocket_data_reply = blocket_data_reply
+        self.__dwh_re_data_yapo_pyramid = dwh_re_data_yapo_pyramid
 
     def insert_to_dwh(self):
-        cleaned_data = self.blocket_data_reply
-        astypes = {"mail_queue_id": "Int64",
-                   "list_id": "Int64",
-                   "rule_id": "Int64",
-                   "ad_id": "Int64"}
+        cleaned_data = self.dwh_re_data_yapo_pyramid
+
+        astypes = {"ad_id_nk": "Int64",
+                   "price": "Int64",
+                   "uf_price": "Int64",
+                   "doc_num": "Int64",
+                   "category_id_fk": "Int64"}
         cleaned_data = cleaned_data.astype(astypes)
         dwh = Database(conf=self.config.db)
-        self.logger.info("First records as evidence to STG")
+        self.logger.info("First records as evidence to DM ANALISYS")
         self.logger.info(cleaned_data.head())
-        dwh.execute_command(self.clean_stg_ad_reply())
-        dwh.insert_copy(cleaned_data, "stg", "ad_reply")
+        dwh.insert_copy(cleaned_data, "dm_analysis", "real_estate_pyramids_yapo")
 
     def generate(self):
-        self.blocket_data_reply = self.config.blocket
+        self.dwh_re_data_yapo_pyramid = self.config.db
         self.insert_to_dwh()
         self.logger.info("Succesfully saved")
         return True
