@@ -55,3 +55,4 @@ class Process():
         self.data_dwh = self.config.db
         self.data_athena = self.config.athenaConf
         self.save()
+        # End
