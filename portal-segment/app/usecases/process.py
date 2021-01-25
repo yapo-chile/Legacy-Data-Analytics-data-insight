@@ -13,6 +13,7 @@ class Process():
                  logger) -> None:
         self.config = config
         self.params = params
+        self.logger = logger
 
     # Write data to data warehouse
     def save(self) -> None:
