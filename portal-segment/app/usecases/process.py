@@ -4,6 +4,8 @@ from infraestructure.athena import Athena
 from infraestructure.psql import Database
 from utils.query import Query
 from utils.read_params import ReadParams
+from .re_queries import InmoAPI
+from time import time
 
 
 class Process():
@@ -53,6 +55,17 @@ class Process():
 
     def generate(self):
         self.logger.info("All good")
-        self.data_dwh = self.config.db
-        self.data_athena = self.config.athenaConf
-        self.save()
+        rank = {}
+        for option in [1, 2, 3]:
+            begin = time()
+            self.logger.info("Applying option {}".format(str(option)))
+            self.real_state_api_data = InmoAPI(self.config,
+                                             self.params,
+                                             self.logger).generate(option)
+            delta = time() - begin
+            self.logger.info(f"Total runtime of the option is {delta}")
+            rank[option] = delta
+        sorted_tuples = sorted(rank.items(), key=lambda item: item[1])
+        sorted_rank = {k: v for k, v in sorted_tuples}
+        for item in sorted_rank.items():
+            self.logger.info("Option {} got runtime of {}".format(str(item[0]), str(item[1])))
