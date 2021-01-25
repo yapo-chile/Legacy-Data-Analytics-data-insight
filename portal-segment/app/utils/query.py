@@ -29,10 +29,23 @@ class Query:
         Method return str with query of athena ad performance data
         """
         query = """
-                select substr(
-                        cast((cast(now() as timestamp) - interval '1' day)
-                    as varchar), 1, 10) as timedate,
-                'Athena' as current_version
+                SELECT
+                    CAST(date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') as date) AS "date",
+                    cast(split_part(ad_id,':',4) as varchar) AS list_id,
+                    count(distinct case when event_type = 'View' and object_type = 'ClassifiedAd' then event_id end) number_of_views,
+                    count(distinct case when event_type = 'Call' then event_id end)-count(distinct case when event_name = 'Ad phone whatsapp number contacted' then event_id end) number_of_calls,
+                    count(distinct case when event_name = 'Ad phone whatsapp number contacted' then event_id end) number_of_call_whatsapp,
+                    count(distinct case when event_type = 'Show' then event_id end) number_of_show_phone,
+                    count(distinct case when event_type = 'Send' then environment_id end) number_of_ad_replies
+                FROM
+                    yapocl_databox.insights_events_behavioral_fact_layer_365d
+                WHERE
+                    ad_id NOT IN ('sdrn:yapocl:classified:', 'sdrn:yapocl:classified:0', 'unknown')
+                AND
+                    CAST(split_part(ad_id,':',4) AS varchar) IN ('{}')
+                AND
+                   date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') = CAST('2021-01-24' as date)
+                GROUP BY 1,2
             """
         return query
 
@@ -41,9 +54,19 @@ class Query:
         Method return str with query of daily ads for each big seller
         """
         command = """
-                    delete from dm_analysis.db_version where 
-                    timedate::date = 
-                    '""" + mail + """'::date """
+                    SELECT
+                        cast(list_id as varchar),
+                        email,
+                        link_type
+                    FROM
+                        stg.big_sellers_detail bs
+                    INNER JOIN
+                        ods.active_ads aa USING (ad_id_nk)
+                    LEFT JOIN
+                        ods.ad a USING (ad_id_nk)
+                    LEFT JOIN
+                            ods.seller s ON a.seller_id_fk =s.seller_id_pk
+                """
 
         return command
 
@@ -52,10 +75,29 @@ class Query:
         Method return str with query of enriched ads parameters
         """
         query = """
-                    select substr(
-                            cast((cast(now() as timestamp) - interval '1' day)
-                        as varchar), 1, 10) as timedate,
-                    'Athena' as current_version
+                    select
+                        a.ad_id_nk,
+                        CASE
+                            WHEN aip.estate_type = '1' then 'Departamento'
+                            WHEN aip.estate_type = '2' then 'Casa'
+                            WHEN aip.estate_type = '3' then 'Oficina'
+                            WHEN aip.estate_type = '4' then 'Comercial e industrial'
+                            WHEN aip.estate_type = '5' then 'Terreno'
+                            WHEN aip.estate_type = '6' then 'Estacionamiento, bodega u otro'
+                            WHEN aip.estate_type = '7' then 'Pieza'
+                            WHEN aip.estate_type = '8' then 'Cabaña'
+                            WHEN aip.estate_type = '9' then 'Habitacion'
+                            END AS estate_type_name,
+                        aip.rooms,
+                            aip.bathrooms,
+                            aip.currency,
+                        a.price
+                    FROM
+                        ods.ads_inmo_params aip
+                    LEFT JOIN
+                        ods.ad a using (ad_id_nk)
+                    WHERE
+                        a.ad_id_nk in ('{}') 
                 """
         return query
 
