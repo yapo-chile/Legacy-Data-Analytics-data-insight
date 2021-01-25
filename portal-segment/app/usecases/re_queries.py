@@ -1,13 +1,11 @@
 # pylint: disable=no-member
 # utf-8
-import logging
-import pandas as pd
-import datetime from datetime
 from infraestructure.psql import Database
 from utils.query import Query
 from utils.read_params import ReadParams
 from joblib import Parallel, delayed
 from multiprocessing import Process
+
 
 class InmoAPI(Query):
     def __init__(self,
