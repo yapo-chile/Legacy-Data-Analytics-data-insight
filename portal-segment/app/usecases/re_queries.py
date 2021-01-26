@@ -39,6 +39,7 @@ class InmoAPI(Query):
         dwh_re_api = self.joined_params(ads, performance, ad_params)
         db_source.close_connection()
         self.__dwh_re_api.append(dwh_re_api)
+        del dwh_re_api
 
     def insert_to_dwh_batch(self):
         cleaned_data = self.dwh_re_api
@@ -53,6 +54,7 @@ class InmoAPI(Query):
             self.logger.info("First records as evidence to DM ANALISYS - Parallel email loop")
             self.logger.info(data.head())
             dwh.insert_copy(data, "dm_analysis", "real_estate_pyramids_yapo")
+        del cleaned_data
 
     # Query data from data blocket
     @property
@@ -77,6 +79,7 @@ class InmoAPI(Query):
             db_source.close_connection()
             self.__dwh_re_api_parallel_queries = dwh_re_api_parallel
             self.insert_to_dwh_parallel()
+            del dwh_re_api_parallel
 
     def performance_query(self, db_source):
         self.performance = db_source.select_to_dict(self.query_get_athena_performance())
@@ -97,6 +100,7 @@ class InmoAPI(Query):
         self.logger.info(cleaned_data.head())
         dwh.insert_copy(cleaned_data, "dm_analysis", "real_estate_pyramids_yapo")
         self.logger.info("Succesfully saved")
+        del cleaned_data
 
     # Query data from data blocket
     @property
@@ -115,6 +119,7 @@ class InmoAPI(Query):
             dwh_re_api_vanilla = self.joined_params(ads, performance, ad_params)
             db_source.close_connection()
             self.__dwh_re_api_vanilla = dwh_re_api_vanilla
+            del dwh_re_api_vanilla
 
     def insert_to_dwh_vanilla(self):
         cleaned_data = self.dwh_re_api_vanilla
@@ -128,6 +133,7 @@ class InmoAPI(Query):
         self.logger.info("First records as evidence to DM ANALISYS - Sequential loop")
         self.logger.info(cleaned_data.head())
         dwh.insert_copy(cleaned_data, "dm_analysis", "real_estate_pyramids_yapo")
+        del cleaned_data
 
     def generate(self, option):
         if option == 1: # Email level parallelism
