@@ -5,6 +5,7 @@ from utils.query import Query
 from utils.read_params import ReadParams
 from joblib import Parallel, delayed
 from multiprocessing import Process
+import gc
 
 
 class InmoAPI(Query):
@@ -38,6 +39,7 @@ class InmoAPI(Query):
         db_source.close_connection()
         del listid
         del df
+        del db_source
 
     def mail_iterations(self, listid, db_source):
         performance = db_source.select_to_dict(self.query_get_athena_performance(listid))
@@ -46,6 +48,8 @@ class InmoAPI(Query):
         dwh_re_api = self.joined_params(self.emails, performance, ad_params)
         self.__dwh_re_api.append(dwh_re_api)
         del dwh_re_api
+        del performance
+        del ad_params
 
     def insert_to_dwh_batch(self):
         cleaned_data = self.dwh_re_api
@@ -63,6 +67,7 @@ class InmoAPI(Query):
         dwh.close_connection()
         del cleaned_data
         del astypes
+        del dwh
 
     # Query data from data blocket
     @property
@@ -91,6 +96,7 @@ class InmoAPI(Query):
         db_source.close_connection()
         del listid
         del df
+        del db_source
 
     def performance_query(self, db_source, listid):
         self.performance = db_source.select_to_dict(self.query_get_athena_performance(listid))
@@ -134,9 +140,12 @@ class InmoAPI(Query):
             self.insert_to_dwh_vanilla(db_source)
             self.logger.info("Succesfully saved")
             del dwh_re_api_vanilla
+            del performance
+            del ad_params
         db_source.close_connection()
         del listid
         del df
+        del db_source
 
     def insert_to_dwh_vanilla(self, db_source):
         cleaned_data = self.dwh_re_api_vanilla
@@ -161,4 +170,7 @@ class InmoAPI(Query):
             self.dwh_re_api_parallel_queries = self.config.db
         elif option == 3: # Basic sequential case
             self.dwh_re_api_vanilla = self.config.db
+        gc.collect()
+        self.logger.info("Uncollectable memory garbage: {}. If empty, all memory of the current "
+                         "run was succesfully freed. Be free, memory!".format(str(gc.garbage)))
         return True
