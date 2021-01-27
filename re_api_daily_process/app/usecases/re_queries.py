@@ -135,7 +135,6 @@ class InmoAPI(Query):
             ad_params = db_source.select_to_dict(self.query_ads_params(listid[i]))
             # ---- JOIN ALL ----
             dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
-            db_source.close_connection()
             self.__dwh_re_api_vanilla = dwh_re_api_vanilla
             self.insert_to_dwh_vanilla(db_source)
             self.logger.info("Succesfully saved")
@@ -162,13 +161,16 @@ class InmoAPI(Query):
         del astypes
 
     def generate(self, option):
-        if option == 1: # Email level parallelism
+        if option == 1:
+            # List id level parallelism
             self.dwh_re_api = self.config.db
             self.insert_to_dwh_batch()
             self.logger.info("Succesfully saved")
-        elif option == 2: # Query level parallelism
+        elif option == 2:
+            # Query level parallelism
             self.dwh_re_api_parallel_queries = self.config.db
-        elif option == 3: # Basic sequential case
+        elif option == 3:
+            # Basic sequential case
             self.dwh_re_api_vanilla = self.config.db
         gc.collect()
         self.logger.info("Uncollectable memory garbage: {}. If empty, all memory of the current "
