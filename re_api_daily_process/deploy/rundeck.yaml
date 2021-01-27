@@ -1,0 +1,67 @@
+- defaultTab: nodes
+  description: |-
+        <Add specific URL or path of the pipeline in github>
+        sudo docker run --rm --net=host \
+                    -v /home/bnbiuser/secrets/pulse_auth:/app/pulse-secret \
+                    -v /home/bnbiuser/secrets/dw_db:/app/db-secret \
+                    -v /home/bnbiuser/secrets/smtp:/app/smtp-secret \
+                    -e APP_PULSE_SECRET=/app/pulse-secret \
+                    -e APP_DB_SECRET=/app/db-secret \
+                    -e APP_SMTP_SECRET=/app/smtp-secret \
+                    containers.mpi-internal.com/yapo/portal-segment:latest \
+                    -email_from="noreply@yapo.cl -- if put this options replace default email from" \
+                    -email_to="email 1 to send data -- if put this options replace default emails to" \
+                    -email_to="email n to send data"
+  executionEnabled: true
+  group: DOCKER/<FOLDER RUNDECK LOCATION>
+  loglevel: DEBUG
+  name: <FOLDER RUNDECK LOCATION> - Project Name Template
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: false
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '1'
+    filter: 'name: dockerhost'
+  nodesSelectedByDefault: true
+  notification:
+    onfailure:
+      email:
+        recipients: data_team@adevinta.com
+        subject: ${job.execid} ${execution.status} ${job.name} - Fallo definitivo
+      plugin:
+        configuration:
+          slack_channel: ''
+          webhook_base_url: https://hooks.slack.com/services
+          webhook_token: T017F9KHA1Y/B01BL7C1CSY/Ai9NzdCrBUA5Ru5sa8JHYrjR
+        type: SlackNotification
+  notifyAvgDurationThreshold: null
+  schedule:
+    month: '*'
+    time:
+      hour: '03'
+      minute: '0'
+      seconds: '0'
+    weekday:
+      day: '*'
+    year: '*'
+  scheduleEnabled: true
+  sequence:
+    commands:
+    - script: |-
+        sudo docker pull containers.mpi-internal.com/yapo/portal-segment:latest
+        sudo docker run --rm --net=host \
+                        -v /home/bnbiuser/secrets/pulse_auth:/app/pulse-secret \
+                        -v /home/bnbiuser/secrets/dw_db:/app/db-secret \
+                        -v /home/bnbiuser/secrets/smtp:/app/smtp-secret \
+                        -e APP_PULSE_SECRET=/app/pulse-secret \
+                        -e APP_DB_SECRET=/app/db-secret \
+                        -e APP_SMTP_SECRET=/app/smtp-secret \
+                        containers.mpi-internal.com/yapo/portal-segment:latest \
+                        -email_from="noreply@yapo.cl" \
+                        -email_to="data_team@adevinta.com"
+    keepgoing: false
+    strategy: node-first
+  timeZone: America/Santiago

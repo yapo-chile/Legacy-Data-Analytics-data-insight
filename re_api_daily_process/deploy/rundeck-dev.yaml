@@ -1,0 +1,46 @@
+- defaultTab: nodes
+  description: |-
+        Check stuff
+        sudo docker run --rm --net=host \
+                        -v /home/bnbiuser/secrets/pulse_auth:/app/pulse-secret \
+                        -v /home/bnbiuser/secrets/dw_db:/app/db-secret \
+                        -v /home/bnbiuser/secrets/smtp:/app/smtp-secret \
+                        -e APP_PULSE_SECRET=/app/pulse-secret \
+                        -e APP_DB_SECRET=/app/db-secret \
+                        -e APP_SMTP_SECRET=/app/smtp-secret \
+                        containers.mpi-internal.com/yapo/portal-segment:feat_portal-segment \
+                        -email_from="noreply@yapo.cl" \
+                        -email_to="data_team@adevinta.com"
+  executionEnabled: true
+  group: DOCKER/INSIGHT
+  loglevel: DEBUG
+  name: INSIGHT - Portal daily segmentation
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: false
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '1'
+    filter: 'name: dockerhost'
+  nodesSelectedByDefault: true
+  notifyAvgDurationThreshold: null
+  scheduleEnabled: false
+  sequence:
+    commands:
+    - script: |-
+        sudo docker pull containers.mpi-internal.com/yapo/portal-segment:feat_portal-segment
+        sudo docker run --rm --net=host \
+                        -v /home/bnbiuser/secrets/pulse_auth:/app/pulse-secret \
+                        -v /home/bnbiuser/secrets/dw_db:/app/db-secret \
+                        -v /home/bnbiuser/secrets/smtp:/app/smtp-secret \
+                        -e APP_PULSE_SECRET=/app/pulse-secret \
+                        -e APP_DB_SECRET=/app/db-secret \
+                        -e APP_SMTP_SECRET=/app/smtp-secret \
+                        containers.mpi-internal.com/yapo/portal-segment::feat_portal-segment \
+                        -email_from="noreply@yapo.cl" \
+                        -email_to="data_team@adevinta.com"
+    keepgoing: false
+    strategy: node-first
+  timeZone: America/Santiago

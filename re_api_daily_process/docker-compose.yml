@@ -1,0 +1,14 @@
+version: '3'
+ 
+services:
+  app:
+    image: ${DOCKER_IMAGE_COMPOSE}
+    container_name: ${DOCKER_CONTAINER_NAME}
+    expose:
+      - "5000"
+    environment:
+      APP_PULSE_SECRET: /app/pulse-secret
+      APP_DB_SECRET: /app/db-secret
+    volumes:
+      - /keys/bnbiuser:/app/db-secret
+      - /keys/zendesk_auth:/app/pulse-secret
