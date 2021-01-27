@@ -17,6 +17,9 @@ class InmoAPI(Query):
         self.logger = logger
         self.performance = ''
         self.ad_params = ''
+        self.emails = ''
+        self.dm_table = "dm_analysis"
+        self.target_table = "real_estate_api_daily_yapo"
 
     # Query data from data blocket
     @property
@@ -27,17 +30,20 @@ class InmoAPI(Query):
     def dwh_re_api(self, config):
         self.__dwh_re_api = []
         db_source = Database(conf=config)
-        emails = db_source.select_to_dict(self.query_get_emails())
+        df = db_source.select_to_dict(self.query_ads_users())
+        listid = df["list_id"]
+        self.emails = df['email']
         # Parallel mail data insert
-        Parallel(n_jobs=2)(delayed(self.mail_iterations)(emails[i], db_source) for i in range(len(emails)))
-
-    def mail_iterations(self, mail, db_source):
-        ads = db_source.select_to_dict(self.query_ads_users(mail))
-        performance = db_source.select_to_dict(self.query_get_athena_performance())
-        ad_params = db_source.select_to_dict(self.query_ads_params())
-        # ---- JOIN ALL ----
-        dwh_re_api = self.joined_params(ads, performance, ad_params)
+        Parallel(n_jobs=2)(delayed(self.mail_iterations)(listid[i], db_source) for i in range(len(listid)))
         db_source.close_connection()
+        del listid
+        del df
+
+    def mail_iterations(self, listid, db_source):
+        performance = db_source.select_to_dict(self.query_get_athena_performance(listid))
+        ad_params = db_source.select_to_dict(self.query_ads_params(listid))
+        # ---- JOIN ALL ----
+        dwh_re_api = self.joined_params(self.emails, performance, ad_params)
         self.__dwh_re_api.append(dwh_re_api)
         del dwh_re_api
 
@@ -48,13 +54,15 @@ class InmoAPI(Query):
                    "uf_price": "Int64",
                    "doc_num": "Int64",
                    "category_id_fk": "Int64"}
+        dwh = Database(conf=self.config.db)
         for data in cleaned_data:
             data = data.astype(astypes)
-            dwh = Database(conf=self.config.db)
             self.logger.info("First records as evidence to DM ANALISYS - Parallel email loop")
             self.logger.info(data.head())
-            dwh.insert_copy(data, "dm_analysis", "real_estate_pyramids_yapo")
+            dwh.insert_copy(data, self.dm_table, self.target_table)
+        dwh.close_connection()
         del cleaned_data
+        del astypes
 
     # Query data from data blocket
     @property
@@ -64,30 +72,33 @@ class InmoAPI(Query):
     @dwh_re_api_parallel_queries.setter
     def dwh_re_api_parallel_queries(self, config):
         db_source = Database(conf=config)
-        emails = db_source.select_to_dict(self.query_get_emails())
-        for i in range(len(emails)):
-            ads = db_source.select_to_dict(self.query_ads_users(emails[i]))
+        df = db_source.select_to_dict(self.query_ads_users())
+        listid = df["list_id"]
+        self.emails = df['email']
+        for i in range(len(listid)):
             # ---- PARALLEL ----
-            performance = Process(target=self.performance_query, args=(db_source,))
+            performance = Process(target=self.performance_query, args=(db_source, listid[i], ))
             performance.start()
-            ad_params = Process(target=self.ad_params_query, args=(db_source,))
+            ad_params = Process(target=self.ad_params_query, args=(db_source, listid[i], ))
             ad_params.start()
             performance.join()
             ad_params.join()
             # ---- JOIN ALL ----
-            dwh_re_api_parallel = self.joined_params(ads, self.performance, self.ad_params)
-            db_source.close_connection()
+            dwh_re_api_parallel = self.joined_params(self.emails, self.performance, self.ad_params)
             self.__dwh_re_api_parallel_queries = dwh_re_api_parallel
-            self.insert_to_dwh_parallel()
+            self.insert_to_dwh_parallel(db_source)
             del dwh_re_api_parallel
+        db_source.close_connection()
+        del listid
+        del df
 
-    def performance_query(self, db_source):
-        self.performance = db_source.select_to_dict(self.query_get_athena_performance())
+    def performance_query(self, db_source, listid):
+        self.performance = db_source.select_to_dict(self.query_get_athena_performance(listid))
 
-    def ad_params_query(self, db_source):
-        self.ad_params = db_source.select_to_dict(self.query_ads_params())
+    def ad_params_query(self, db_source, listid):
+        self.ad_params = db_source.select_to_dict(self.query_ads_params(listid))
 
-    def insert_to_dwh_parallel(self):
+    def insert_to_dwh_parallel(self, db_source):
         cleaned_data = self.dwh_re_api_parallel_queries
         astypes = {"ad_id_nk": "Int64",
                    "price": "Int64",
@@ -95,12 +106,12 @@ class InmoAPI(Query):
                    "doc_num": "Int64",
                    "category_id_fk": "Int64"}
         cleaned_data = cleaned_data.astype(astypes)
-        dwh = Database(conf=self.config.db)
         self.logger.info("First records as evidence to DM ANALISYS - Parallel queries")
         self.logger.info(cleaned_data.head())
-        dwh.insert_copy(cleaned_data, "dm_analysis", "real_estate_pyramids_yapo")
+        db_source.insert_copy(cleaned_data, self.dm_table, self.target_table)
         self.logger.info("Succesfully saved")
         del cleaned_data
+        del astypes
 
     # Query data from data blocket
     @property
@@ -110,18 +121,24 @@ class InmoAPI(Query):
     @dwh_re_api_vanilla.setter
     def dwh_re_api_vanilla(self, config):
         db_source = Database(conf=config)
-        emails = db_source.select_to_dict(self.query_get_emails())
-        for i in range(len(emails)):
-            ads = db_source.select_to_dict(self.query_ads_users(emails[i]))
-            performance = db_source.select_to_dict(self.query_get_athena_performance())
-            ad_params = db_source.select_to_dict(self.query_ads_params())
+        df = db_source.select_to_dict(self.query_ads_users())
+        listid = df["list_id"]
+        self.emails = df['email']
+        for i in range(len(listid)):
+            performance = db_source.select_to_dict(self.query_get_athena_performance(listid[i]))
+            ad_params = db_source.select_to_dict(self.query_ads_params(listid[i]))
             # ---- JOIN ALL ----
-            dwh_re_api_vanilla = self.joined_params(ads, performance, ad_params)
+            dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
             db_source.close_connection()
             self.__dwh_re_api_vanilla = dwh_re_api_vanilla
+            self.insert_to_dwh_vanilla(db_source)
+            self.logger.info("Succesfully saved")
             del dwh_re_api_vanilla
+        db_source.close_connection()
+        del listid
+        del df
 
-    def insert_to_dwh_vanilla(self):
+    def insert_to_dwh_vanilla(self, db_source):
         cleaned_data = self.dwh_re_api_vanilla
         astypes = {"ad_id_nk": "Int64",
                    "price": "Int64",
@@ -129,11 +146,11 @@ class InmoAPI(Query):
                    "doc_num": "Int64",
                    "category_id_fk": "Int64"}
         cleaned_data = cleaned_data.astype(astypes)
-        dwh = Database(conf=self.config.db)
         self.logger.info("First records as evidence to DM ANALISYS - Sequential loop")
         self.logger.info(cleaned_data.head())
-        dwh.insert_copy(cleaned_data, "dm_analysis", "real_estate_pyramids_yapo")
+        db_source.insert_copy(cleaned_data, self.dm_table, self.target_table)
         del cleaned_data
+        del astypes
 
     def generate(self, option):
         if option == 1: # Email level parallelism
@@ -144,6 +161,4 @@ class InmoAPI(Query):
             self.dwh_re_api_parallel_queries = self.config.db
         elif option == 3: # Basic sequential case
             self.dwh_re_api_vanilla = self.config.db
-            self.insert_to_dwh_vanilla()
-            self.logger.info("Succesfully saved")
         return True

@@ -13,18 +13,7 @@ class Query:
         self.params = params
         self.conf = conf
 
-    def query_get_emails(self) -> str:
-        """
-        Method return str with query of big seller emails
-        """
-        query = """
-                select cast((now() - interval '1 day')::date as varchar)
-                    as timedate,
-	            version()  as current_version;
-            """
-        return query
-
-    def query_get_athena_performance(self) -> str:
+    def query_get_athena_performance(self, list_id) -> str:
         """
         Method return str with query of athena ad performance data
         """
@@ -42,6 +31,8 @@ class Query:
                 WHERE
                     ad_id NOT IN ('sdrn:yapocl:classified:', 'sdrn:yapocl:classified:0', 'unknown')
                 AND
+                    cast(split_part(ad_id,':',4) as varchar) = """ + list_id + """
+                AND
                     CAST(split_part(ad_id,':',4) AS varchar) IN ('{}')
                 AND
                    date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') = CAST('2021-01-24' as date)
@@ -49,7 +40,7 @@ class Query:
             """
         return query
 
-    def query_ads_users(self, mail) -> str:
+    def query_ads_users(self) -> str:
         """
         Method return str with query of daily ads for each big seller
         """
@@ -70,7 +61,7 @@ class Query:
 
         return command
 
-    def query_ads_params(self) -> str:
+    def query_ads_params(self, list_id) -> str:
         """
         Method return str with query of enriched ads parameters
         """
