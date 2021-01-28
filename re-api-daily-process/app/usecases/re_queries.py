@@ -21,17 +21,17 @@ class InmoAPI(Query):
         self.emails = ''
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
-        self.final_format = {"email": "Int64",
-                               "date": "Int64",
+        self.final_format = {"email": "S",
+                               "date": "S",
                                "number_of_views": "Int64",
                                "number_of_calls": "Int64",
                                "number_of_call_whatsapp": "Int64",
                                "number_of_show_phone": "Int64",
                                "number_of_ad_replies": "Int64",
-                               "estate_type_name": "Int64",
+                               "estate_type_name": "S",
                                "rooms": "Int64",
                                "bathrooms": "Int64",
-                               "currency": "Int64",
+                               "currency": "S",
                                "price": "Int64",
                                "list_id2": "Int64"}
 
