@@ -20,7 +20,7 @@ class Query:
         query = """
                 SELECT
                     CAST(date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') as date) AS "date",
-                    cast(split_part(ad_id,':',4) as varchar) AS list_id,
+                    cast(split_part(ad_id,':',4) as integer) AS list_id,
                     count(distinct case when event_type = 'View' and object_type = 'ClassifiedAd' then event_id end) number_of_views,
                     count(distinct case when event_type = 'Call' then event_id end)-count(distinct case when event_name = 'Ad phone whatsapp number contacted' then event_id end) number_of_calls,
                     count(distinct case when event_name = 'Ad phone whatsapp number contacted' then event_id end) number_of_call_whatsapp,
@@ -31,9 +31,7 @@ class Query:
                 WHERE
                     ad_id NOT IN ('sdrn:yapocl:classified:', 'sdrn:yapocl:classified:0', 'unknown')
                 AND
-                    cast(split_part(ad_id,':',4) as varchar) = """ + list_id + """
-                AND
-                    CAST(split_part(ad_id,':',4) AS varchar) IN ('{}')
+                    CAST(split_part(ad_id,':',4) AS varchar) IN ('""" + str(list_id) + """"')
                 AND
                    date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') = CAST('2021-01-24' as date)
                 GROUP BY 1,2
@@ -45,18 +43,44 @@ class Query:
         Method return str with query of daily ads for each big seller
         """
         command = """
-                    SELECT
-                        cast(list_id as varchar),
-                        email,
-                        link_type
-                    FROM
-                        stg.big_sellers_detail bs
-                    INNER JOIN
-                        ods.active_ads aa USING (ad_id_nk)
-                    LEFT JOIN
-                        ods.ad a USING (ad_id_nk)
-                    LEFT JOIN
-                            ods.seller s ON a.seller_id_fk =s.seller_id_pk
+                    select
+                        aa.email,
+                        aa.list_id
+                    from(
+                        select
+                            s.email,
+                            cast(a.list_id_nk as varchar) as list_id
+                        From
+                            ods.ad a
+                        inner join
+                            ods.active_ads aa using(ad_id_nk)
+                        left join
+                            ods.seller s
+                            on a.seller_id_fk =s.seller_id_pk
+                        left join
+                            dm_analysis.pro_user_mail_performance pro
+                            on s.email=pro.email
+                        where
+                            pro.type='pro'
+                        union all select
+                            s.email,
+                            cast(bs.list_id as varchar) as list_id
+                        From
+                            ods.ad a
+                        inner join
+                            ods.active_ads aa using(ad_id_nk)
+                        left join
+                            ods.seller s
+                            on a.seller_id_fk =s.seller_id_pk
+                        inner join
+                            stg.big_sellers_detail bs
+                        on
+                            bs.ad_id_nk::int = a.ad_id_nk
+                        left join
+                            dm_analysis.pro_user_mail_performance pro
+                            on s.email=pro.email
+                        where
+                            pro.type='bigseller') aa
                 """
 
         return command
@@ -67,7 +91,6 @@ class Query:
         """
         query = """
                     select
-                        a.ad_id_nk,
                         CASE
                             WHEN aip.estate_type = '1' then 'Departamento'
                             WHEN aip.estate_type = '2' then 'Casa'
@@ -80,21 +103,53 @@ class Query:
                             WHEN aip.estate_type = '9' then 'Habitacion'
                             END AS estate_type_name,
                         aip.rooms,
-                            aip.bathrooms,
-                            aip.currency,
-                        a.price
-                    FROM
-                        ods.ads_inmo_params aip
-                    LEFT JOIN
-                        ods.ad a using (ad_id_nk)
-                    WHERE
-                        a.ad_id_nk in ('{}') 
+                        aip.bathrooms,
+                        aip.currency,
+                        a.price,
+                        aa.list_id as list_id,
+                        aa.list_id as list_id2
+                    from ods.ads_inmo_params aip
+                    inner join (
+                        select
+                            ad_id_nk,
+                            cast(a.list_id_nk as varchar) as list_id
+                        from
+                            ods.ad a
+                        where
+                            list_id_nk = """ + str(list_id) + """
+                        union all
+                        select
+                            ad_id_nk,
+                            cast(bs.list_id as varchar) as list_id
+                        from
+                            stg.big_sellers_detail bs
+                        where
+                            list_id = """ + str(list_id) + """) aa
+                    on
+                        aip.ad_id_nk=aa.ad_id_nk
+                    left join
+                        ods.ad a
+                    on
+                        a.ad_id_nk=aip.ad_id_nk
                 """
         return query
 
-    def joined_params(self, ads, performance, ad_params) -> pd.Dataframe:
+    def joined_params(self, mails, performance, ad_params) -> pd.Dataframe:
         """
         Method return Pandas Dataframe of joined tables
+        fecha
+        email
+        list_id
+        state_type
+        price
+        bathroom
+        room
+        currency
+        number_of_views
+        number_of_calls
+        number_of_whatsapp
+        number_of_show_phone
+        number_of_ad_reply
         """
-        final_df = ads.set_index('key').join(performance.set_index('key')).set_index('key').join(ad_params.set_index('key'))
+        final_df = mails.set_index('list_id').join(performance.set_index('list_id')).set_index('list_id').join(ad_params.set_index('list_id'))
         return final_df

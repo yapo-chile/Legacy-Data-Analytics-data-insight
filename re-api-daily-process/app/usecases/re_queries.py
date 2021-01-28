@@ -21,6 +21,19 @@ class InmoAPI(Query):
         self.emails = ''
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
+        self.final_format = {"email": "Int64",
+                               "date": "Int64",
+                               "number_of_views": "Int64",
+                               "number_of_calls": "Int64",
+                               "number_of_call_whatsapp": "Int64",
+                               "number_of_show_phone": "Int64",
+                               "number_of_ad_replies": "Int64",
+                               "estate_type_name": "Int64",
+                               "rooms": "Int64",
+                               "bathrooms": "Int64",
+                               "currency": "Int64",
+                               "price": "Int64",
+                               "list_id2": "Int64"}
 
     # Query data from data blocket
     @property
@@ -44,6 +57,10 @@ class InmoAPI(Query):
     def mail_iterations(self, listid, db_source):
         performance = db_source.select_to_dict(self.query_get_athena_performance(listid))
         ad_params = db_source.select_to_dict(self.query_ads_params(listid))
+        self.logger.info("PERFORMANCE DF HEAD:")
+        self.logger.info(performance.head())
+        self.logger.info("PARAMS DF HEAD:")
+        self.logger.info(ad_params.head())
         # ---- JOIN ALL ----
         dwh_re_api = self.joined_params(self.emails, performance, ad_params)
         self.__dwh_re_api.append(dwh_re_api)
@@ -53,11 +70,7 @@ class InmoAPI(Query):
 
     def insert_to_dwh_batch(self):
         cleaned_data = self.dwh_re_api
-        astypes = {"ad_id_nk": "Int64",
-                   "price": "Int64",
-                   "uf_price": "Int64",
-                   "doc_num": "Int64",
-                   "category_id_fk": "Int64"}
+        astypes = self.final_format
         dwh = Database(conf=self.config.db)
         for data in cleaned_data:
             data = data.astype(astypes)
@@ -89,6 +102,10 @@ class InmoAPI(Query):
             performance.join()
             ad_params.join()
             # ---- JOIN ALL ----
+            self.logger.info("PERFORMANCE DF HEAD:")
+            self.logger.info(self.performance.head())
+            self.logger.info("PARAMS DF HEAD:")
+            self.logger.info(self.ad_params.head())
             dwh_re_api_parallel = self.joined_params(self.emails, self.performance, self.ad_params)
             self.__dwh_re_api_parallel_queries = dwh_re_api_parallel
             self.insert_to_dwh_parallel(db_source)
@@ -106,11 +123,7 @@ class InmoAPI(Query):
 
     def insert_to_dwh_parallel(self, db_source):
         cleaned_data = self.dwh_re_api_parallel_queries
-        astypes = {"ad_id_nk": "Int64",
-                   "price": "Int64",
-                   "uf_price": "Int64",
-                   "doc_num": "Int64",
-                   "category_id_fk": "Int64"}
+        astypes = self.final_format
         cleaned_data = cleaned_data.astype(astypes)
         self.logger.info("First records as evidence to DM ANALISYS - Parallel queries")
         self.logger.info(cleaned_data.head())
@@ -134,6 +147,10 @@ class InmoAPI(Query):
             performance = db_source.select_to_dict(self.query_get_athena_performance(listid[i]))
             ad_params = db_source.select_to_dict(self.query_ads_params(listid[i]))
             # ---- JOIN ALL ----
+            self.logger.info("PERFORMANCE DF HEAD:")
+            self.logger.info(performance.head())
+            self.logger.info("PARAMS DF HEAD:")
+            self.logger.info(ad_params.head())
             dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
             self.__dwh_re_api_vanilla = dwh_re_api_vanilla
             self.insert_to_dwh_vanilla(db_source)
@@ -148,11 +165,7 @@ class InmoAPI(Query):
 
     def insert_to_dwh_vanilla(self, db_source):
         cleaned_data = self.dwh_re_api_vanilla
-        astypes = {"ad_id_nk": "Int64",
-                   "price": "Int64",
-                   "uf_price": "Int64",
-                   "doc_num": "Int64",
-                   "category_id_fk": "Int64"}
+        astypes = self.final_format
         cleaned_data = cleaned_data.astype(astypes)
         self.logger.info("First records as evidence to DM ANALISYS - Sequential loop")
         self.logger.info(cleaned_data.head())
