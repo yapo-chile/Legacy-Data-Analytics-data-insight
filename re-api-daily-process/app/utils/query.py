@@ -33,7 +33,7 @@ class Query:
                 AND
                     CAST(split_part(ad_id,':',4) AS varchar) IN ('""" + str(list_id) + """"')
                 AND
-                   date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') = CAST('2021-01-24' as date)
+                   date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') = CAST('""" + self.params.get_date_from() + """' as date)
                 GROUP BY 1,2
             """
         return query
@@ -51,9 +51,9 @@ class Query:
                             s.email,
                             cast(a.list_id_nk as varchar) as list_id
                         From
-                            ods.ad a
+                            ods.active_ads aa
                         inner join
-                            ods.active_ads aa using(ad_id_nk)
+                            ods.ad a using(ad_id_nk)
                         left join
                             ods.seller s
                             on a.seller_id_fk =s.seller_id_pk

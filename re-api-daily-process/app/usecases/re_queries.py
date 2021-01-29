@@ -34,7 +34,7 @@ class InmoAPI(Query):
                                "currency": "S",
                                "price": "Int64"}
 
-    def joined_params(self, mails, performance, ad_params) -> pd.Dataframe:
+    def joined_params(self, EMAIL_LISTID, PERFORMANCE, PARAMS) -> pd.Dataframe:
         """
         Method return Pandas Dataframe of joined tables
         fecha
@@ -51,7 +51,7 @@ class InmoAPI(Query):
         number_of_show_phone
         number_of_ad_reply
         """
-        final_df = mails.set_index('list_id').join(performance.set_index('list_id')).join(ad_params.set_index('list_id')).dropna(thresh=10)
+        final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').merge(PARAMS, left_on='list_id', right_on='list_id')
         return final_df
 
     # Query data from data blocket
