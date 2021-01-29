@@ -51,7 +51,7 @@ class InmoAPI(Query):
         number_of_show_phone
         number_of_ad_reply
         """
-        final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').merge(PARAMS, left_on='list_id', right_on='list_id')
+        final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').merge(PARAMS, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
         return final_df
 
     # Query data from data blocket
