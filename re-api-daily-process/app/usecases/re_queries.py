@@ -6,7 +6,7 @@ from utils.read_params import ReadParams
 from joblib import Parallel, delayed
 from multiprocessing import Process
 import gc
-
+import pandas as pd
 
 class InmoAPI(Query):
     def __init__(self,
@@ -33,6 +33,26 @@ class InmoAPI(Query):
                                "bathrooms": "Int64",
                                "currency": "S",
                                "price": "Int64"}
+
+    def joined_params(self, mails, performance, ad_params) -> pd.Dataframe:
+        """
+        Method return Pandas Dataframe of joined tables
+        fecha
+        email
+        list_id
+        state_type
+        price
+        bathroom
+        room
+        currency
+        number_of_views
+        number_of_calls
+        number_of_whatsapp
+        number_of_show_phone
+        number_of_ad_reply
+        """
+        final_df = mails.set_index('list_id').join(performance.set_index('list_id')).join(ad_params.set_index('list_id')).dropna(thresh=10)
+        return final_df
 
     # Query data from data blocket
     @property

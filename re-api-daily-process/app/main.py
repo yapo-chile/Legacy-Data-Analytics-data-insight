@@ -10,7 +10,7 @@ from usecases.process import Process
 if __name__ == '__main__':
     CONFIG = getConf()
     TIME = TimeExecution()
-    LOGGER = logging.getLogger('api-real-estate')
+    LOGGER = logging.getLogger('re-api-daily-process')
     DATE_FORMAT = """%(asctime)s,%(msecs)d %(levelname)-2s """
     INFO_FORMAT = """[%(filename)s:%(lineno)d] %(message)s"""
     LOG_FORMAT = DATE_FORMAT + INFO_FORMAT
