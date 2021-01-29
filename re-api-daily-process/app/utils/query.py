@@ -106,8 +106,7 @@ class Query:
                         aip.bathrooms,
                         aip.currency,
                         a.price,
-                        aa.list_id as list_id,
-                        aa.list_id as list_id2
+                        aa.list_id as list_id
                     from ods.ads_inmo_params aip
                     inner join (
                         select
@@ -151,5 +150,5 @@ class Query:
         number_of_show_phone
         number_of_ad_reply
         """
-        final_df = mails.set_index('list_id').join(performance.set_index('list_id')).set_index('list_id').join(ad_params.set_index('list_id'))
+        final_df = mails.set_index('list_id').join(performance.set_index('list_id')).join(ad_params.set_index('list_id')).dropna(thresh=10)
         return final_df

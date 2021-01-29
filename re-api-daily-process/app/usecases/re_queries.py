@@ -32,8 +32,7 @@ class InmoAPI(Query):
                                "rooms": "Int64",
                                "bathrooms": "Int64",
                                "currency": "S",
-                               "price": "Int64",
-                               "list_id2": "Int64"}
+                               "price": "Int64"}
 
     # Query data from data blocket
     @property
