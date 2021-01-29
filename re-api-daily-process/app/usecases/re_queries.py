@@ -21,17 +21,17 @@ class InmoAPI(Query):
         self.emails = ''
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
-        self.final_format = {"email": "S",
-                               "date": "S",
+        self.final_format = {"email": "str",
+                               "date": "str",
                                "number_of_views": "Int64",
                                "number_of_calls": "Int64",
                                "number_of_call_whatsapp": "Int64",
                                "number_of_show_phone": "Int64",
                                "number_of_ad_replies": "Int64",
-                               "estate_type_name": "S",
+                               "estate_type_name": "str",
                                "rooms": "Int64",
                                "bathrooms": "Int64",
-                               "currency": "S",
+                               "currency": "str",
                                "price": "Int64"}
 
     def joined_params(self, EMAIL_LISTID, PERFORMANCE, PARAMS) -> pd.Dataframe:
@@ -54,6 +54,8 @@ class InmoAPI(Query):
         EMAIL_LISTID["list_id"] = EMAIL_LISTID["list_id"].apply(pd.to_numeric)
         PERFORMANCE["list_id"] = PERFORMANCE["list_id"].apply(pd.to_numeric)
         PARAMS["list_id"] = PARAMS["list_id"].apply(pd.to_numeric)
+        # PARAMS['rooms'] = PARAMS['rooms'].where(pd.notnull(PARAMS['rooms']), None)
+        # PARAMS['bathrooms'] = PARAMS['bathrooms'].where(pd.notnull(PARAMS['bathrooms']), None)
         final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').merge(PARAMS, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
         return final_df
 
