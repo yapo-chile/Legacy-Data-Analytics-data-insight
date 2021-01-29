@@ -51,6 +51,9 @@ class InmoAPI(Query):
         number_of_show_phone
         number_of_ad_reply
         """
+        EMAIL_LISTID["list_id"] = EMAIL_LISTID["list_id"].apply(pd.to_numeric)
+        PERFORMANCE["list_id"] = PERFORMANCE["list_id"].apply(pd.to_numeric)
+        PARAMS["list_id"] = PARAMS["list_id"].apply(pd.to_numeric)
         final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').merge(PARAMS, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
         return final_df
 
