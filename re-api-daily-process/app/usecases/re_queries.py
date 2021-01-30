@@ -68,14 +68,12 @@ class InmoAPI(Query):
     def dwh_re_api(self, config):
         self.__dwh_re_api = []
         db_source = Database(conf=config)
-        df = db_source.select_to_dict(self.query_ads_users())
-        listid = df["list_id"]
-        self.emails = df['email']
+        self.emails = db_source.select_to_dict(self.query_ads_users())
+        listid = self.emails["list_id"]
         # Parallel mail data insert
         Parallel(n_jobs=2)(delayed(self.mail_iterations)(listid[i], db_source) for i in range(len(listid)))
         db_source.close_connection()
         del listid
-        del df
         del db_source
 
     def mail_iterations(self, listid, db_source):
@@ -114,9 +112,8 @@ class InmoAPI(Query):
     @dwh_re_api_parallel_queries.setter
     def dwh_re_api_parallel_queries(self, config):
         db_source = Database(conf=config)
-        df = db_source.select_to_dict(self.query_ads_users())
-        listid = df["list_id"]
-        self.emails = df['email']
+        self.emails = db_source.select_to_dict(self.query_ads_users())
+        listid = self.emails["list_id"]
         for i in range(len(listid)):
             # ---- PARALLEL ----
             performance = Process(target=self.performance_query, args=(db_source, listid[i], ))
@@ -136,7 +133,6 @@ class InmoAPI(Query):
             del dwh_re_api_parallel
         db_source.close_connection()
         del listid
-        del df
         del db_source
 
     def performance_query(self, db_source, listid):
@@ -164,9 +160,8 @@ class InmoAPI(Query):
     @dwh_re_api_vanilla.setter
     def dwh_re_api_vanilla(self, config):
         db_source = Database(conf=config)
-        df = db_source.select_to_dict(self.query_ads_users())
-        listid = df["list_id"]
-        self.emails = df['email']
+        self.emails = db_source.select_to_dict(self.query_ads_users())
+        listid = self.emails["list_id"]
         for i in range(len(listid)):
             performance = db_source.select_to_dict(self.query_get_athena_performance(listid[i]))
             ad_params = db_source.select_to_dict(self.query_ads_params(listid[i]))
@@ -184,7 +179,6 @@ class InmoAPI(Query):
             del ad_params
         db_source.close_connection()
         del listid
-        del df
         del db_source
 
     def insert_to_dwh_vanilla(self, db_source):
