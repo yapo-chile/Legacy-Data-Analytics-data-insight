@@ -18,6 +18,7 @@ class Process:
         self.config = config
         self.params = params
         self.logger = logger
+        self.logger.info(str(config))
 
     # Write data to data warehouse
     def save(self) -> None:
