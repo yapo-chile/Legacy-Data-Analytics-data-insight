@@ -4,7 +4,9 @@ from infraestructure.athena import Athena
 from infraestructure.psql import Database
 from utils.query import Query
 from utils.read_params import ReadParams
-from .re_queries import InmoAPI
+from .re_queries_op1 import InmoAPI1
+from .re_queries_op2 import InmoAPI2
+from .re_queries_op3 import InmoAPI3
 from time import time
 
 
@@ -56,12 +58,22 @@ class Process():
     def generate(self):
         self.logger.info("All good")
         rank = {}
-        for option in [1, 2, 3]:
-            begin = time()
-            self.logger.info("Applying option {}".format(str(option)))
-            self.real_state_api_data = InmoAPI(self.config,
+        # for option in [1, 2, 3]:
+        option = 3  # OPTION FIXATED FOR TESTING PURPOSES
+        begin = time()
+        self.logger.info("Applying option {}".format(str(option)))
+        if option == 1:
+            self.real_state_api_data = InmoAPI1(self.config,
                                              self.params,
-                                             self.logger).generate(option)
+                                             self.logger).generate()
+        elif option == 2:
+            self.real_state_api_data = InmoAPI2(self.config,
+                                               self.params,
+                                               self.logger).generate()
+        elif option == 3:
+            self.real_state_api_data = InmoAPI3(self.config,
+                                               self.params,
+                                               self.logger).generate()
             delta = time() - begin
             self.logger.info(f"Total runtime of the option is {delta}")
             rank[option] = delta

@@ -8,7 +8,8 @@ from multiprocessing import Process
 import gc
 import pandas as pd
 
-class InmoAPI(Query):
+
+class InmoAPI1(Query):
     def __init__(self,
                  config,
                  params: ReadParams,
@@ -59,7 +60,6 @@ class InmoAPI(Query):
         final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').merge(PARAMS, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
         return final_df
 
-    # Query data from data blocket
     @property
     def dwh_re_api(self):
         return self.__dwh_re_api
@@ -104,101 +104,12 @@ class InmoAPI(Query):
         del astypes
         del dwh
 
-    # Query data from data blocket
-    @property
-    def dwh_re_api_parallel_queries(self):
-        return self.__dwh_re_api_parallel_queries
-
-    @dwh_re_api_parallel_queries.setter
-    def dwh_re_api_parallel_queries(self, config):
-        db_source = Database(conf=config)
-        self.emails = db_source.select_to_dict(self.query_ads_users())
-        listid = self.emails["list_id"]
-        for i in range(len(listid)):
-            # ---- PARALLEL ----
-            performance = Process(target=self.performance_query, args=(db_source, listid[i], ))
-            performance.start()
-            ad_params = Process(target=self.ad_params_query, args=(db_source, listid[i], ))
-            ad_params.start()
-            performance.join()
-            ad_params.join()
-            # ---- JOIN ALL ----
-            self.logger.info("PERFORMANCE DF HEAD:")
-            self.logger.info(self.performance.head())
-            self.logger.info("PARAMS DF HEAD:")
-            self.logger.info(self.ad_params.head())
-            self.__dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
-            self.insert_to_dwh_parallel(db_source)
-        db_source.close_connection()
-        del listid
-        del db_source
-
-    def performance_query(self, db_source, listid):
-        self.performance = db_source.select_to_dict(self.query_get_athena_performance(listid))
-
-    def ad_params_query(self, db_source, listid):
-        self.ad_params = db_source.select_to_dict(self.query_ads_params(listid))
-
-    def insert_to_dwh_parallel(self, db_source):
-        cleaned_data = self.dwh_re_api_parallel_queries
-        astypes = self.final_format
-        cleaned_data = cleaned_data.astype(astypes)
-        self.logger.info("First records as evidence to DM ANALISYS - Parallel queries")
-        self.logger.info(cleaned_data.head())
-        db_source.insert_copy(cleaned_data, self.dm_table, self.target_table)
+    def generate(self):
+        # List id level parallelism
+        self.dwh_re_api = self.config.db
+        self.insert_to_dwh_batch()
         self.logger.info("Succesfully saved")
-        del cleaned_data
-        del astypes
 
-    # Query data from data blocket
-    @property
-    def dwh_re_api_vanilla(self):
-        return self.__dwh_re_api_vanilla
-
-    @dwh_re_api_vanilla.setter
-    def dwh_re_api_vanilla(self, config):
-        db_source = Database(conf=config)
-        self.emails = db_source.select_to_dict(self.query_ads_users())
-        listid = self.emails["list_id"]
-        for i in range(len(listid)):
-            performance = db_source.select_to_dict(self.query_get_athena_performance(listid[i]))
-            ad_params = db_source.select_to_dict(self.query_ads_params(listid[i]))
-            # ---- JOIN ALL ----
-            self.logger.info("PERFORMANCE DF HEAD:")
-            self.logger.info(performance.head())
-            self.logger.info("PARAMS DF HEAD:")
-            self.logger.info(ad_params.head())
-            self.__dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
-            self.insert_to_dwh_vanilla(db_source)
-            self.logger.info("Succesfully saved")
-            del performance
-            del ad_params
-        db_source.close_connection()
-        del listid
-        del db_source
-
-    def insert_to_dwh_vanilla(self, db_source):
-        cleaned_data = self.dwh_re_api_vanilla
-        astypes = self.final_format
-        cleaned_data = cleaned_data.astype(astypes)
-        self.logger.info("First records as evidence to DM ANALISYS - Sequential loop")
-        self.logger.info(cleaned_data.head())
-        db_source.insert_copy(cleaned_data, self.dm_table, self.target_table)
-        del cleaned_data
-        del astypes
-
-    def generate(self, option):
-        if option == 1:
-            # List id level parallelism
-            self.dwh_re_api = self.config.db
-            self.insert_to_dwh_batch()
-            self.logger.info("Succesfully saved")
-        elif option == 2:
-            # Query level parallelism
-            self.dwh_re_api_parallel_queries = self.config.db
-        elif option == 3:
-            # Basic sequential case
-            self.dwh_re_api_vanilla = self.config.db
         gc.collect()
         self.logger.info("Uncollectable memory garbage: {}. If empty, all memory of the current "
                          "run was succesfully freed. Be free, memory!".format(str(gc.garbage)))
