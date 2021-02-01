@@ -34,7 +34,7 @@ class InmoAPI1(Query):
                                "currency": "str",
                                "price": "Int64"}
 
-    def joined_params(self, EMAIL_LISTID, PERFORMANCE, PARAMS) -> pd.Dataframe:
+    def joined_params(self, EMAIL_LISTID, PERFORMANCE, PARAMS):
         """
         Method return Pandas Dataframe of joined tables
         fecha
