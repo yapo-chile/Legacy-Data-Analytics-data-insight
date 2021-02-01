@@ -3,6 +3,7 @@
 from infraestructure.psql import Database
 from utils.query import Query
 from utils.read_params import ReadParams
+from infraestructure.athena import Athena
 import gc
 import pandas as pd
 
@@ -65,11 +66,12 @@ class InmoAPI3(Query):
     @dwh_re_api_vanilla.setter
     def dwh_re_api_vanilla(self, config):
         db_source = Database(conf=config)
+        db_athena = Athena(conf=config)
         self.emails = db_source.select_to_dict(self.query_ads_users())
         self.logger.info("Information about emails table:")
         self.logger.info(self.emails.head())
         for i in range(len(self.emails["list_id"])):
-            performance = db_source.select_to_dict(self.query_get_athena_performance(self.emails["list_id"][i]))
+            performance = db_athena.select_to_dict(self.query_get_athena_performance(self.emails["list_id"][i]))
             ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"][i]))
             # ---- JOIN ALL ----
             self.logger.info("PERFORMANCE DF HEAD:")
@@ -82,6 +84,7 @@ class InmoAPI3(Query):
             del performance
             del ad_params
         db_source.close_connection()
+        db_athena.close_connection()
         del db_source
 
     def insert_to_dwh_vanilla(self, db_source):

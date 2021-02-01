@@ -4,6 +4,7 @@ from infraestructure.psql import Database
 from utils.query import Query
 from utils.read_params import ReadParams
 from joblib import Parallel, delayed
+from infraestructure.athena import Athena
 import gc
 import pandas as pd
 
@@ -74,7 +75,9 @@ class InmoAPI1(Query):
         del db_source
 
     def mail_iterations(self, listid, db_source):
-        performance = db_source.select_to_dict(self.query_get_athena_performance(listid))
+        db_athena = Athena(conf=config)
+        performance = db_athena.select_to_dict(self.query_get_athena_performance(listid))
+        db_athena.close_connection()
         ad_params = db_source.select_to_dict(self.query_ads_params(listid))
         self.logger.info("PERFORMANCE DF HEAD:")
         self.logger.info(performance.head())

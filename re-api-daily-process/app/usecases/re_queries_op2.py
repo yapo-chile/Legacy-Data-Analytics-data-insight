@@ -4,6 +4,7 @@ from infraestructure.psql import Database
 from utils.query import Query
 from utils.read_params import ReadParams
 from multiprocessing import Process
+from infraestructure.athena import Athena
 import gc
 import pandas as pd
 
@@ -66,10 +67,11 @@ class InmoAPI2(Query):
     @dwh_re_api_parallel_queries.setter
     def dwh_re_api_parallel_queries(self, config):
         db_source = Database(conf=config)
+        db_athena = Athena(conf=config)
         self.emails = db_source.select_to_dict(self.query_ads_users())
         for i in range(len(self.emails["list_id"])):
             # ---- PARALLEL ----
-            performance = Process(target=self.performance_query, args=(db_source, self.emails["list_id"][i], ))
+            performance = Process(target=self.performance_query, args=(db_athena, self.emails["list_id"][i], ))
             performance.start()
             ad_params = Process(target=self.ad_params_query, args=(db_source, self.emails["list_id"][i], ))
             ad_params.start()
@@ -83,6 +85,7 @@ class InmoAPI2(Query):
             self.__dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
             self.insert_to_dwh_parallel(db_source)
         db_source.close_connection()
+        db_athena.close_connection()
         del db_source
 
     def performance_query(self, db_source, listid):
