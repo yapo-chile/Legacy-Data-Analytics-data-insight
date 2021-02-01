@@ -18,7 +18,8 @@ class Process:
         self.config = config
         self.params = params
         self.logger = logger
-        self.logger.info(str(config))
+        # self.logger.info(str(config))
+        # JUST FOR DEBUGGING, IT'S RISKY TO TRY TO PRINT SECRETS (they don't appear, but still)
 
     # Write data to data warehouse
     def save(self) -> None:
