@@ -66,10 +66,9 @@ class InmoAPI3(Query):
     def dwh_re_api_vanilla(self, config):
         db_source = Database(conf=config)
         self.emails = db_source.select_to_dict(self.query_ads_users())
-        listid = self.emails["list_id"]
-        for i in range(len(listid)):
-            performance = db_source.select_to_dict(self.query_get_athena_performance(listid[i]))
-            ad_params = db_source.select_to_dict(self.query_ads_params(listid[i]))
+        for i in range(len(self.emails["list_id"])):
+            performance = db_source.select_to_dict(self.query_get_athena_performance(self.emails["list_id"][i]))
+            ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"][i]))
             # ---- JOIN ALL ----
             self.logger.info("PERFORMANCE DF HEAD:")
             self.logger.info(performance.head())
@@ -81,18 +80,13 @@ class InmoAPI3(Query):
             del performance
             del ad_params
         db_source.close_connection()
-        del listid
         del db_source
 
     def insert_to_dwh_vanilla(self, db_source):
-        cleaned_data = self.dwh_re_api_vanilla
-        astypes = self.final_format
-        cleaned_data = cleaned_data.astype(astypes)
+        self.dwh_re_api_vanilla = self.dwh_re_api_vanilla.astype(self.final_format)
         self.logger.info("First records as evidence to DM ANALISYS - Sequential loop")
-        self.logger.info(cleaned_data.head())
-        db_source.insert_copy(cleaned_data, self.dm_table, self.target_table)
-        del cleaned_data
-        del astypes
+        self.logger.info(self.dwh_re_api_vanilla.head())
+        db_source.insert_copy(self.dwh_re_api_vanilla, self.dm_table, self.target_table)
 
     def generate(self):
         # Basic sequential case

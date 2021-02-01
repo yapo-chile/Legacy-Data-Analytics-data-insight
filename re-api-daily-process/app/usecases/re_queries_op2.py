@@ -67,12 +67,11 @@ class InmoAPI2(Query):
     def dwh_re_api_parallel_queries(self, config):
         db_source = Database(conf=config)
         self.emails = db_source.select_to_dict(self.query_ads_users())
-        listid = self.emails["list_id"]
-        for i in range(len(listid)):
+        for i in range(len(self.emails["list_id"])):
             # ---- PARALLEL ----
-            performance = Process(target=self.performance_query, args=(db_source, listid[i], ))
+            performance = Process(target=self.performance_query, args=(db_source, self.emails["list_id"][i], ))
             performance.start()
-            ad_params = Process(target=self.ad_params_query, args=(db_source, listid[i], ))
+            ad_params = Process(target=self.ad_params_query, args=(db_source, self.emails["list_id"][i], ))
             ad_params.start()
             performance.join()
             ad_params.join()
@@ -84,7 +83,6 @@ class InmoAPI2(Query):
             self.__dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
             self.insert_to_dwh_parallel(db_source)
         db_source.close_connection()
-        del listid
         del db_source
 
     def performance_query(self, db_source, listid):
@@ -94,15 +92,11 @@ class InmoAPI2(Query):
         self.ad_params = db_source.select_to_dict(self.query_ads_params(listid))
 
     def insert_to_dwh_parallel(self, db_source):
-        cleaned_data = self.dwh_re_api_parallel_queries
-        astypes = self.final_format
-        cleaned_data = cleaned_data.astype(astypes)
+        self.dwh_re_api_parallel_queries = self.dwh_re_api_parallel_queries.astype(self.final_format)
         self.logger.info("First records as evidence to DM ANALISYS - Parallel queries")
-        self.logger.info(cleaned_data.head())
-        db_source.insert_copy(cleaned_data, self.dm_table, self.target_table)
+        self.logger.info(self.dwh_re_api_parallel_queries.head())
+        db_source.insert_copy(self.dwh_re_api_parallel_queries, self.dm_table, self.target_table)
         self.logger.info("Succesfully saved")
-        del cleaned_data
-        del astypes
 
     def generate(self):
         # Query level parallelism

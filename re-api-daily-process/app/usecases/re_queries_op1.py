@@ -68,11 +68,9 @@ class InmoAPI1(Query):
         self.__dwh_re_api = []
         db_source = Database(conf=config)
         self.emails = db_source.select_to_dict(self.query_ads_users())
-        listid = self.emails["list_id"]
         # Parallel mail data insert
-        Parallel(n_jobs=2)(delayed(self.mail_iterations)(listid[i], db_source) for i in range(len(listid)))
+        Parallel(n_jobs=2)(delayed(self.mail_iterations)(self.emails["list_id"][i], db_source) for i in range(len(self.emails["list_id"])))
         db_source.close_connection()
-        del listid
         del db_source
 
     def mail_iterations(self, listid, db_source):
@@ -83,24 +81,18 @@ class InmoAPI1(Query):
         self.logger.info("PARAMS DF HEAD:")
         self.logger.info(ad_params.head())
         # ---- JOIN ALL ----
-        dwh_re_api = self.joined_params(self.emails, performance, ad_params)
-        self.__dwh_re_api.append(dwh_re_api)
-        del dwh_re_api
+        self.__dwh_re_api.append(self.joined_params(self.emails, performance, ad_params))
         del performance
         del ad_params
 
     def insert_to_dwh_batch(self):
-        cleaned_data = self.dwh_re_api
-        astypes = self.final_format
         dwh = Database(conf=self.config.db)
-        for data in cleaned_data:
-            data = data.astype(astypes)
+        for data in self.dwh_re_api:
+            data = data.astype(self.final_format)
             self.logger.info("First records as evidence to DM ANALISYS - Parallel email loop")
             self.logger.info(data.head())
             dwh.insert_copy(data, self.dm_table, self.target_table)
         dwh.close_connection()
-        del cleaned_data
-        del astypes
         del dwh
 
     def generate(self):

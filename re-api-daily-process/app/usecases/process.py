@@ -10,7 +10,7 @@ from .re_queries_op3 import InmoAPI3
 from time import time
 
 
-class Process():
+class Process:
     def __init__(self,
                  config,
                  params: ReadParams,
