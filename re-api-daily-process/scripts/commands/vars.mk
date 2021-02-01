@@ -16,7 +16,7 @@ export REPORT_ARTIFACTS=reports
 #APP variables
 genport = $(shell expr \( $(shell id -u) - \( $(shell id -u) / 100 \) \* 100 \) \* 200 + 30400 + $(1))
 
-export APPNAME=portal-segment
+export APPNAME=re-api-daily-process
 export VERSION=0.0.1
 export EXEC=./${APPNAME}
 export YO=$(shell expr `whoami`)
