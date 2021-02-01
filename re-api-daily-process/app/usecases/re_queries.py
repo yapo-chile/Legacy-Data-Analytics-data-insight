@@ -127,10 +127,8 @@ class InmoAPI(Query):
             self.logger.info(self.performance.head())
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(self.ad_params.head())
-            dwh_re_api_parallel = self.joined_params(self.emails, self.performance, self.ad_params)
-            self.__dwh_re_api_parallel_queries = dwh_re_api_parallel
+            self.__dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
             self.insert_to_dwh_parallel(db_source)
-            del dwh_re_api_parallel
         db_source.close_connection()
         del listid
         del db_source
@@ -170,11 +168,9 @@ class InmoAPI(Query):
             self.logger.info(performance.head())
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(ad_params.head())
-            dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
-            self.__dwh_re_api_vanilla = dwh_re_api_vanilla
+            self.__dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
             self.insert_to_dwh_vanilla(db_source)
             self.logger.info("Succesfully saved")
-            del dwh_re_api_vanilla
             del performance
             del ad_params
         db_source.close_connection()
