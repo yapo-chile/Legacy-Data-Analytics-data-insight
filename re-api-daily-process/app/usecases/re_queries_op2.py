@@ -87,6 +87,7 @@ class InmoAPI2(Query):
         db_source.close_connection()
         db_athena.close_connection()
         del db_source
+        del db_athena
 
     def performance_query(self, db_source, listid):
         self.performance = db_source.select_to_dict(self.query_get_athena_performance(listid))

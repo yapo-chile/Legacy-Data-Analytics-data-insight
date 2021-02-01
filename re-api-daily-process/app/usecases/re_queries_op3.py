@@ -86,6 +86,7 @@ class InmoAPI3(Query):
         db_source.close_connection()
         db_athena.close_connection()
         del db_source
+        del db_athena
 
     def insert_to_dwh_vanilla(self, db_source):
         self.dwh_re_api_vanilla = self.dwh_re_api_vanilla.astype(self.final_format)

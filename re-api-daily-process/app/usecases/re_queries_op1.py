@@ -70,14 +70,15 @@ class InmoAPI1(Query):
         db_source = Database(conf=config)
         self.emails = db_source.select_to_dict(self.query_ads_users())
         # Parallel mail data insert
-        Parallel(n_jobs=2)(delayed(self.mail_iterations)(self.emails["list_id"][i], db_source) for i in range(len(self.emails["list_id"])))
+        Parallel(n_jobs=2)(delayed(self.mail_iterations)(self.emails["list_id"][i], db_source, config) for i in range(len(self.emails["list_id"])))
         db_source.close_connection()
         del db_source
 
-    def mail_iterations(self, listid, db_source):
+    def mail_iterations(self, listid, db_source, config):
         db_athena = Athena(conf=config)
         performance = db_athena.select_to_dict(self.query_get_athena_performance(listid))
         db_athena.close_connection()
+        del db_athena
         ad_params = db_source.select_to_dict(self.query_ads_params(listid))
         self.logger.info("PERFORMANCE DF HEAD:")
         self.logger.info(performance.head())
