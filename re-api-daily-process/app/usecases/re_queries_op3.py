@@ -65,8 +65,8 @@ class InmoAPI3(Query):
 
     @dwh_re_api_vanilla.setter
     def dwh_re_api_vanilla(self, config):
-        db_source = Database(conf=config)
-        db_athena = Athena(conf=config)
+        db_source = Database(conf=config.db)
+        db_athena = Athena(conf=config.athenaConf)
         self.emails = db_source.select_to_dict(self.query_ads_users())
         self.logger.info("Information about emails table:")
         self.logger.info(self.emails.head())
@@ -96,7 +96,7 @@ class InmoAPI3(Query):
 
     def generate(self):
         # Basic sequential case
-        self.dwh_re_api_vanilla = self.config.db
+        self.dwh_re_api_vanilla = self.config
         gc.collect()
         self.logger.info("Uncollectable memory garbage: {}. If empty, all memory of the current "
                          "run was succesfully freed. Be free, memory!".format(str(gc.garbage)))

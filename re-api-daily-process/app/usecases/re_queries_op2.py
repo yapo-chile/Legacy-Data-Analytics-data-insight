@@ -66,8 +66,8 @@ class InmoAPI2(Query):
 
     @dwh_re_api_parallel_queries.setter
     def dwh_re_api_parallel_queries(self, config):
-        db_source = Database(conf=config)
-        db_athena = Athena(conf=config)
+        db_source = Database(conf=config.db)
+        db_athena = Athena(conf=config.athenaConf)
         self.emails = db_source.select_to_dict(self.query_ads_users())
         for i in range(len(self.emails["list_id"])):
             # ---- PARALLEL ----
@@ -104,7 +104,7 @@ class InmoAPI2(Query):
 
     def generate(self):
         # Query level parallelism
-        self.dwh_re_api_parallel_queries = self.config.db
+        self.dwh_re_api_parallel_queries = self.config
 
         gc.collect()
         self.logger.info("Uncollectable memory garbage: {}. If empty, all memory of the current "
