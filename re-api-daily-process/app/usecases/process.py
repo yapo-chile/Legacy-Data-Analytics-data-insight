@@ -74,9 +74,9 @@ class Process():
             self.real_state_api_data = InmoAPI3(self.config,
                                                self.params,
                                                self.logger).generate()
-            delta = time() - begin
-            self.logger.info(f"Total runtime of the option is {delta}")
-            rank[option] = delta
+        delta = time() - begin
+        self.logger.info(f"Total runtime of the option is {delta}")
+        rank[option] = delta
         sorted_tuples = sorted(rank.items(), key=lambda item: item[1])
         sorted_rank = {k: v for k, v in sorted_tuples}
         for item in sorted_rank.items():
