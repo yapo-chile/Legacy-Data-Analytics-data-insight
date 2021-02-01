@@ -66,6 +66,8 @@ class InmoAPI3(Query):
     def dwh_re_api_vanilla(self, config):
         db_source = Database(conf=config)
         self.emails = db_source.select_to_dict(self.query_ads_users())
+        self.logger.info("Information about emails table:")
+        self.logger.info(self.emails.head())
         for i in range(len(self.emails["list_id"])):
             performance = db_source.select_to_dict(self.query_get_athena_performance(self.emails["list_id"][i]))
             ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"][i]))
