@@ -17,6 +17,7 @@ class Query:
         """
         Method return str with query of athena ad performance data
         """
+        list_id = int(list_id)
         query = """
                 SELECT
                     CAST(date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') as date) AS "date",
@@ -89,6 +90,7 @@ class Query:
         """
         Method return str with query of enriched ads parameters
         """
+        list_id = int(list_id)
         query = """
                     select
                         CASE
