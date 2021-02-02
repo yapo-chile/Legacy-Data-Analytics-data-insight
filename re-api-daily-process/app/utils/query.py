@@ -31,7 +31,7 @@ class Query:
                 WHERE
                     ad_id NOT IN ('sdrn:yapocl:classified:', 'sdrn:yapocl:classified:0', 'unknown')
                 AND
-                    CAST(split_part(ad_id,':',4) AS varchar) IN ('""" + str(list_id) + """"')
+                    CAST(split_part(ad_id,':',4) AS varchar) IN ('""" + str(list_id) + """')
                 AND
                    date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') = CAST('""" + self.params.get_date_from() + """' as date)
                 GROUP BY 1,2
