@@ -107,6 +107,21 @@ class InmoAPI2(Query):
                 db_athena.close_connection()
                 db_source = Database(conf=self.config.db)
                 db_athena = Athena(conf=self.config.athenaConf)
+                self.performance = db_athena.get_data(self.query_get_athena_performance(self.emails["list_id"][i]))
+                self.logger.info("PERFORMANCE DF HEAD:")
+                self.logger.info(performance.head())
+                if performance.empty:
+                    self.performance = self.performance_dummy
+                    self.performance['list_id'] = self.emails["list_id"][i]
+                self.ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"][i]))
+                # ---- JOIN ALL ----
+                self.logger.info("PARAMS DF HEAD:")
+                self.logger.info(ad_params.head())
+                if ad_params.empty:
+                    self.ad_params = self.params_dummy
+                    self.ad_params['list_id'] = self.emails["list_id"][i]
+                self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
+                self.insert_to_dwh_parallel(db_source)
         db_source.close_connection()
         db_athena.close_connection()
         del db_source
