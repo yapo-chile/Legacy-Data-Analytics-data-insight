@@ -74,17 +74,19 @@ class InmoAPI1(Query):
     def mail_iterations(self, listid, db_source, config):
         db_athena = Athena(conf=self.config.athenaConf)
         performance = db_athena.get_data(self.query_get_athena_performance(listid))
-        db_athena.close_connection()
-        del db_athena
-        ad_params = db_source.select_to_dict(self.query_ads_params(listid))
         self.logger.info("PERFORMANCE DF HEAD:")
         self.logger.info(performance.head())
-        self.logger.info("PARAMS DF HEAD:")
-        self.logger.info(ad_params.head())
-        # ---- JOIN ALL ----
-        self.dwh_re_api.append(self.joined_params(self.emails, performance, ad_params))
+        db_athena.close_connection()
+        del db_athena
+        if not performance.empty:
+            ad_params = db_source.select_to_dict(self.query_ads_params(listid))
+            self.logger.info("PARAMS DF HEAD:")
+            self.logger.info(ad_params.head())
+            # ---- JOIN ALL ----
+            if not ad_params.empty:
+                self.dwh_re_api.append(self.joined_params(self.emails, performance, ad_params))
+            del ad_params
         del performance
-        del ad_params
 
     def insert_to_dwh_batch(self):
         dwh = Database(conf=self.config.db)

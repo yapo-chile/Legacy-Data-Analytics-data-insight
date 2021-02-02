@@ -69,17 +69,19 @@ class InmoAPI3(Query):
         self.logger.info(self.emails.head())
         for i in range(len(self.emails["list_id"])):
             performance = db_athena.get_data(self.query_get_athena_performance(self.emails["list_id"][i]))
-            ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"][i]))
-            # ---- JOIN ALL ----
             self.logger.info("PERFORMANCE DF HEAD:")
             self.logger.info(performance.head())
-            self.logger.info("PARAMS DF HEAD:")
-            self.logger.info(ad_params.head())
-            self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
-            self.insert_to_dwh_vanilla(db_source)
-            self.logger.info("Succesfully saved")
+            if not performance.empty:
+                ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"][i]))
+                # ---- JOIN ALL ----
+                self.logger.info("PARAMS DF HEAD:")
+                self.logger.info(ad_params.head())
+                if not ad_params.empty:
+                    self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
+                    self.insert_to_dwh_vanilla(db_source)
+                    self.logger.info("Succesfully saved")
+                del ad_params
             del performance
-            del ad_params
         db_source.close_connection()
         db_athena.close_connection()
         del db_source
