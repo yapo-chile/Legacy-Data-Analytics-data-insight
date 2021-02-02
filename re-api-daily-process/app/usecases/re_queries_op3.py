@@ -21,6 +21,12 @@ class InmoAPI3(Query):
         self.emails = ''
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
+        self.performance_dummy = {'list_id': [0], 'number_of_views': [0], 'number_of_calls': [0], 'number_of_call_whatsapp': [0], 'number_of_show_phone': [0], 'number_of_ad_replies': [0]}
+        self.performance_dummy = pd.DataFrame.from_dict(self.performance_dummy)
+        self.params_dummy = {'list_id': [0], 'estate_type_name': [""], 'rooms': [0],
+                                  'bathrooms': [0], 'currency': [""],
+                                  'price': [0]}
+        self.params_dummy = pd.DataFrame.from_dict(self.params_dummy)
         self.final_format = {"email": "str",
                                "date": "str",
                                "number_of_views": "Int64",
@@ -66,22 +72,29 @@ class InmoAPI3(Query):
         db_athena = Athena(conf=self.config.athenaConf)
         self.emails = db_source.select_to_dict(self.query_ads_users())
         self.logger.info("Information about emails table:")
-        self.logger.info(self.emails.head())
+        self.logger.info(str(self.emails))
         for i in range(len(self.emails["list_id"])):
-            performance = db_athena.get_data(self.query_get_athena_performance(self.emails["list_id"][i]))
-            self.logger.info("PERFORMANCE DF HEAD:")
-            self.logger.info(performance.head())
-            if not performance.empty:
+            self.logger.info("ITERATION NUMBER {} OF {}".format(str(i), str(len(self.emails["list_id"]))))
+            try:
+                performance = db_athena.get_data(self.query_get_athena_performance(self.emails["list_id"][i]))
+                self.logger.info("PERFORMANCE DF HEAD:")
+                self.logger.info(performance.head())
+                if performance.empty:
+                    performance = self.performance_dummy
                 ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"][i]))
                 # ---- JOIN ALL ----
                 self.logger.info("PARAMS DF HEAD:")
                 self.logger.info(ad_params.head())
-                if not ad_params.empty:
-                    self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
-                    self.insert_to_dwh_vanilla(db_source)
-                    self.logger.info("Succesfully saved")
+                if ad_params.empty:
+                    ad_params = self.params_dummy
+                self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
+                self.insert_to_dwh_vanilla(db_source)
+                self.logger.info("Succesfully saved")
                 del ad_params
-            del performance
+                del performance
+            except Exception as e:
+                self.logger.info(e)
+                self.logger.info(self.emails["email"][i], self.emails["list_id"][i])
         db_source.close_connection()
         db_athena.close_connection()
         del db_source
@@ -89,8 +102,6 @@ class InmoAPI3(Query):
 
     def insert_to_dwh_vanilla(self, db_source):
         self.dwh_re_api_vanilla = self.dwh_re_api_vanilla.astype(self.final_format)
-        self.logger.info("First records as evidence to DM ANALISYS - Sequential loop")
-        self.logger.info(self.dwh_re_api_vanilla.head())
         db_source.insert_copy(self.dm_table, self.target_table, self.dwh_re_api_vanilla)
 
     def generate(self):

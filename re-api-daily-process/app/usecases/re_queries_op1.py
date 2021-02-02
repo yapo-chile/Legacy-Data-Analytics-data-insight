@@ -20,8 +20,17 @@ class InmoAPI1(Query):
         self.performance = ''
         self.ad_params = ''
         self.emails = ''
+        self.iteration = 0
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
+        self.performance_dummy = {'list_id': [0], 'number_of_views': [0], 'number_of_calls': [0],
+                                  'number_of_call_whatsapp': [0], 'number_of_show_phone': [0],
+                                  'number_of_ad_replies': [0]}
+        self.performance_dummy = pd.DataFrame.from_dict(self.performance_dummy)
+        self.params_dummy = {'list_id': [0], 'estate_type_name': [""], 'rooms': [0],
+                             'bathrooms': [0], 'currency': [""],
+                             'price': [0]}
+        self.params_dummy = pd.DataFrame.from_dict(self.params_dummy)
         self.final_format = {"email": "str",
                                "date": "str",
                                "number_of_views": "Int64",
@@ -62,45 +71,53 @@ class InmoAPI1(Query):
         self.logger.info(str(final_df))
         return final_df
 
-    def dwh_re_api(self, config):
+    def dwh_re_api_func(self):
         self.dwh_re_api = []
         db_source = Database(conf=self.config.db)
         self.emails = db_source.select_to_dict(self.query_ads_users())
+        self.logger.info("Information about emails table:")
+        self.logger.info(str(self.emails))
         # Parallel mail data insert
-        Parallel(n_jobs=2)(delayed(self.mail_iterations)(self.emails["list_id"][i], db_source, config) for i in range(len(self.emails["list_id"])))
+        Parallel(n_jobs=2)(delayed(self.mail_iterations)(self.emails["list_id"][i], db_source, self.emails["email"][i]) for i in range(len(self.emails["list_id"])))
         db_source.close_connection()
         del db_source
 
-    def mail_iterations(self, listid, db_source, config):
-        db_athena = Athena(conf=self.config.athenaConf)
-        performance = db_athena.get_data(self.query_get_athena_performance(listid))
-        self.logger.info("PERFORMANCE DF HEAD:")
-        self.logger.info(performance.head())
-        db_athena.close_connection()
-        del db_athena
-        if not performance.empty:
+    def mail_iterations(self, listid, db_source, email):
+        self.iteration += 1
+        self.logger.info("ITERATION NUMBER {} OF {}".format(str(self.iteration), str(len(self.emails["list_id"]))))
+        try:
+            db_athena = Athena(conf=self.config.athenaConf)
+            performance = db_athena.get_data(self.query_get_athena_performance(listid))
+            self.logger.info("PERFORMANCE DF HEAD:")
+            self.logger.info(performance.head())
+            db_athena.close_connection()
+            del db_athena
+            if performance.empty:
+                performance = self.performance_dummy
             ad_params = db_source.select_to_dict(self.query_ads_params(listid))
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(ad_params.head())
             # ---- JOIN ALL ----
-            if not ad_params.empty:
-                self.dwh_re_api.append(self.joined_params(self.emails, performance, ad_params))
+            if ad_params.empty:
+                ad_params = self.params_dummy
+            self.dwh_re_api.append(self.joined_params(self.emails, performance, ad_params))
             del ad_params
-        del performance
+            del performance
+        except Exception as e:
+            self.logger.info(e)
+            self.logger.info(email, listid)
 
     def insert_to_dwh_batch(self):
         dwh = Database(conf=self.config.db)
         for data in self.dwh_re_api:
             data = data.astype(self.final_format)
-            self.logger.info("First records as evidence to DM ANALISYS - Parallel email loop")
-            self.logger.info(data.head())
             dwh.insert_copy(self.dm_table, self.target_table, data)
         dwh.close_connection()
         del dwh
 
     def generate(self):
         # List id level parallelism
-        self.dwh_re_api()
+        self.dwh_re_api_func()
         self.insert_to_dwh_batch()
         self.logger.info("Succesfully saved")
 

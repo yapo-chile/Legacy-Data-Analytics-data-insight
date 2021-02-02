@@ -22,6 +22,14 @@ class InmoAPI2(Query):
         self.emails = ''
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
+        self.performance_dummy = {'list_id': [0], 'number_of_views': [0], 'number_of_calls': [0],
+                                  'number_of_call_whatsapp': [0], 'number_of_show_phone': [0],
+                                  'number_of_ad_replies': [0]}
+        self.performance_dummy = pd.DataFrame.from_dict(self.performance_dummy)
+        self.params_dummy = {'list_id': [0], 'estate_type_name': [""], 'rooms': [0],
+                             'bathrooms': [0], 'currency': [""],
+                             'price': [0]}
+        self.params_dummy = pd.DataFrame.from_dict(self.params_dummy)
         self.final_format = {"email": "str",
                                "date": "str",
                                "number_of_views": "Int64",
@@ -66,22 +74,32 @@ class InmoAPI2(Query):
         db_source = Database(conf=self.config.db)
         db_athena = Athena(conf=self.config.athenaConf)
         self.emails = db_source.select_to_dict(self.query_ads_users())
+        self.logger.info("Information about emails table:")
+        self.logger.info(str(self.emails))
         for i in range(len(self.emails["list_id"])):
-            # ---- PARALLEL ----
-            performance = Process(target=self.performance_query, args=(db_athena, self.emails["list_id"][i], ))
-            performance.start()
-            ad_params = Process(target=self.ad_params_query, args=(db_source, self.emails["list_id"][i], ))
-            ad_params.start()
-            performance.join()
-            ad_params.join()
-            # ---- JOIN ALL ----
-            self.logger.info("PERFORMANCE DF HEAD:")
-            self.logger.info(self.performance.head())
-            self.logger.info("PARAMS DF HEAD:")
-            self.logger.info(self.ad_params.head())
-            if not self.performance.empty and not self.ad_params.empty:
+            self.logger.info("ITERATION NUMBER {} OF {}".format(str(i), str(len(self.emails["list_id"]))))
+            try:
+                # ---- PARALLEL ----
+                performance = Process(target=self.performance_query, args=(db_athena, self.emails["list_id"][i], ))
+                performance.start()
+                ad_params = Process(target=self.ad_params_query, args=(db_source, self.emails["list_id"][i], ))
+                ad_params.start()
+                performance.join()
+                ad_params.join()
+                # ---- JOIN ALL ----
+                self.logger.info("PERFORMANCE DF HEAD:")
+                self.logger.info(self.performance.head())
+                self.logger.info("PARAMS DF HEAD:")
+                self.logger.info(self.ad_params.head())
+                if self.performance.empty:
+                    self.performance = self.performance_dummy
+                if self.ad_params.empty:
+                    self.ad_params = self.params_dummy
                 self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
                 self.insert_to_dwh_parallel(db_source)
+            except Exception as e:
+                self.logger.info(e)
+                self.logger.info(self.emails["email"][i], self.emails["list_id"][i])
         db_source.close_connection()
         db_athena.close_connection()
         del db_source
@@ -95,8 +113,6 @@ class InmoAPI2(Query):
 
     def insert_to_dwh_parallel(self, db_source):
         self.dwh_re_api_parallel_queries = self.dwh_re_api_parallel_queries.astype(self.final_format)
-        self.logger.info("First records as evidence to DM ANALISYS - Parallel queries")
-        self.logger.info(self.dwh_re_api_parallel_queries.head())
         db_source.insert_copy(self.dm_table, self.target_table, self.dwh_re_api_parallel_queries)
         self.logger.info("Succesfully saved")
 
