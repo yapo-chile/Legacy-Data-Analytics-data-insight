@@ -17,8 +17,8 @@ class InmoAPI2(Query):
         self.config = config
         self.params = params
         self.logger = logger
-        self.performance = ''
-        self.ad_params = ''
+        self.performance = pd.DataFrame()
+        self.ad_params = pd.DataFrame()
         self.emails = ''
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"

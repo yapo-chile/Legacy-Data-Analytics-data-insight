@@ -16,8 +16,6 @@ class InmoAPI3(Query):
         self.config = config
         self.params = params
         self.logger = logger
-        self.performance = ''
-        self.ad_params = ''
         self.emails = ''
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"

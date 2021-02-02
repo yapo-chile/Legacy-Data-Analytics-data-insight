@@ -18,8 +18,6 @@ class InmoAPI1(Query):
         self.config = config
         self.params = params
         self.logger = logger
-        self.performance = ''
-        self.ad_params = ''
         self.emails = ''
         self.iteration = 0
         self.dm_table = "dm_analysis"
