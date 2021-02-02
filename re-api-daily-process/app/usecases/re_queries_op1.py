@@ -75,23 +75,23 @@ class InmoAPI1(Query):
     def dwh_re_api_func(self):
         self.dwh_re_api = []
         db_source = Database(conf=self.config.db)
+        db_athena = Athena(conf=self.config.athenaConf)
         self.emails = db_source.select_to_dict(self.query_ads_users())
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
         # Parallel mail data insert
-        Parallel(n_jobs=2)(delayed(self.mail_iterations)(self.emails["list_id"][i], db_source, self.emails["email"][i]) for i in range(len(self.emails["list_id"])))
+        Parallel(n_jobs=2)(delayed(self.mail_iterations)(self.emails["list_id"][i], db_source, self.emails["email"][i], db_athena) for i in range(len(self.emails["list_id"])))
         db_source.close_connection()
+        db_athena.close_connection()
         del db_source
 
-    def mail_iterations(self, listid, db_source, email):
+    def mail_iterations(self, listid, db_source, email, db_athena):
         self.iteration += 1
         self.logger.info("ITERATION NUMBER {} OF {}".format(str(self.iteration), str(len(self.emails["list_id"]))))
         try:
-            db_athena = Athena(conf=self.config.athenaConf)
             performance = db_athena.get_data(self.query_get_athena_performance(listid))
             self.logger.info("PERFORMANCE DF HEAD:")
             self.logger.info(performance.head())
-            db_athena.close_connection()
             del db_athena
             if performance.empty:
                 performance = self.performance_dummy
