@@ -61,7 +61,7 @@ class Process:
         self.logger.info("All good")
         rank = {}
         # for option in [1, 2, 3]:
-        option = 2  # OPTION FIXATED FOR TESTING PURPOSES
+        option = 1  # OPTION FIXATED FOR TESTING PURPOSES
         begin = time()
         self.logger.info("Applying option {}".format(str(option)))
         if option == 1:
