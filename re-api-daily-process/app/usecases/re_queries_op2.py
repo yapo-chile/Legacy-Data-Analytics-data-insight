@@ -94,8 +94,10 @@ class InmoAPI2(Query):
                 self.logger.info(self.ad_params.head())
                 if self.performance.empty:
                     self.performance = self.performance_dummy
+                    self.performance["list_id"] = self.emails["list_id"][i]
                 if self.ad_params.empty:
                     self.ad_params = self.params_dummy
+                    self.ad_params["list_id"] = self.emails["list_id"][i]
                 self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
                 self.insert_to_dwh_parallel(db_source)
             except Exception as e:

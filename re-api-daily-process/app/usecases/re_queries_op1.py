@@ -95,12 +95,14 @@ class InmoAPI1(Query):
             del db_athena
             if performance.empty:
                 performance = self.performance_dummy
+                performance['list_id'] = listid
             ad_params = db_source.select_to_dict(self.query_ads_params(listid))
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(ad_params.head())
             # ---- JOIN ALL ----
             if ad_params.empty:
                 ad_params = self.params_dummy
+                ad_params["list_id"] = listid
             self.dwh_re_api.append(self.joined_params(self.emails, performance, ad_params))
             del ad_params
             del performance
