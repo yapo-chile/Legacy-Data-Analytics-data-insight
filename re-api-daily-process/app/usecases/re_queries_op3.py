@@ -75,7 +75,7 @@ class InmoAPI3(Query):
             self.logger.info(performance.head())
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(ad_params.head())
-            self.__dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
+            self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
             self.insert_to_dwh_vanilla(db_source)
             self.logger.info("Succesfully saved")
             del performance

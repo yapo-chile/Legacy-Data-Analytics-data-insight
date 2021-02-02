@@ -63,7 +63,7 @@ class InmoAPI1(Query):
         return final_df
 
     def dwh_re_api(self, config):
-        self.__dwh_re_api = []
+        self.dwh_re_api = []
         db_source = Database(conf=self.config.db)
         self.emails = db_source.select_to_dict(self.query_ads_users())
         # Parallel mail data insert
@@ -82,7 +82,7 @@ class InmoAPI1(Query):
         self.logger.info("PARAMS DF HEAD:")
         self.logger.info(ad_params.head())
         # ---- JOIN ALL ----
-        self.__dwh_re_api.append(self.joined_params(self.emails, performance, ad_params))
+        self.dwh_re_api.append(self.joined_params(self.emails, performance, ad_params))
         del performance
         del ad_params
 

@@ -79,7 +79,7 @@ class InmoAPI2(Query):
             self.logger.info(self.performance.head())
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(self.ad_params.head())
-            self.__dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
+            self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
             self.insert_to_dwh_parallel(db_source)
         db_source.close_connection()
         db_athena.close_connection()
