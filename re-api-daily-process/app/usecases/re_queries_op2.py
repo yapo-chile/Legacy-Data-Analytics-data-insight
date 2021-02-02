@@ -66,8 +66,9 @@ class InmoAPI2(Query):
 
     @dwh_re_api_parallel_queries.setter
     def dwh_re_api_parallel_queries(self, config):
-        db_source = Database(conf=config.db)
-        db_athena = Athena(conf=config.athenaConf)
+        db_source = Database(conf=self.config.db)
+        db_athena = Athena(conf=self.config.athenaConf)
+        self.logger.info(str(config))
         self.emails = db_source.select_to_dict(self.query_ads_users())
         for i in range(len(self.emails["list_id"])):
             # ---- PARALLEL ----

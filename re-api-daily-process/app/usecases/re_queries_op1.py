@@ -66,8 +66,9 @@ class InmoAPI1(Query):
 
     @dwh_re_api.setter
     def dwh_re_api(self, config):
+        self.logger.info(str(config))
         self.__dwh_re_api = []
-        db_source = Database(conf=config.db)
+        db_source = Database(conf=self.config.db)
         self.emails = db_source.select_to_dict(self.query_ads_users())
         # Parallel mail data insert
         Parallel(n_jobs=2)(delayed(self.mail_iterations)(self.emails["list_id"][i], db_source, config) for i in range(len(self.emails["list_id"])))
@@ -75,7 +76,7 @@ class InmoAPI1(Query):
         del db_source
 
     def mail_iterations(self, listid, db_source, config):
-        db_athena = Athena(conf=config.athenaConf)
+        db_athena = Athena(conf=self.config.athenaConf)
         performance = db_athena.get_data(self.query_get_athena_performance(listid))
         db_athena.close_connection()
         del db_athena
