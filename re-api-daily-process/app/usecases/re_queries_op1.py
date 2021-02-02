@@ -4,6 +4,7 @@ from infraestructure.psql import Database
 from utils.query import Query
 from utils.read_params import ReadParams
 from joblib import Parallel, delayed
+from joblib import wrap_non_picklable_objects
 from infraestructure.athena import Athena
 import gc
 import pandas as pd
@@ -80,11 +81,13 @@ class InmoAPI1(Query):
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
         # Parallel mail data insert
-        Parallel(n_jobs=2)(delayed(self.mail_iterations)(self.emails["list_id"][i], db_source, self.emails["email"][i], db_athena) for i in range(len(self.emails["list_id"])))
+        Parallel(n_jobs=2)(self.mail_iterations(self.emails["list_id"][i], db_source, self.emails["email"][i], db_athena) for i in range(len(self.emails["list_id"])))
         db_source.close_connection()
         db_athena.close_connection()
         del db_source
 
+    @delayed
+    @wrap_non_picklable_objects
     def mail_iterations(self, listid, db_source, email, db_athena):
         self.iteration += 1
         self.logger.info("ITERATION NUMBER {} OF {}".format(str(self.iteration), str(len(self.emails["list_id"]))))
