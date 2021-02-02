@@ -75,7 +75,7 @@ class Process:
         elif option == 3:
             self.real_state_api_data = InmoAPI3(self.config,
                                                self.params,
-                                               self.logger).generate()
+                                               self.logger).generate(True)
         delta = time() - begin
         self.logger.info(f"Total runtime of the option is {delta}")
         rank[option] = delta
