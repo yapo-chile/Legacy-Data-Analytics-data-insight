@@ -21,7 +21,7 @@ class InmoAPI1(Query):
         self.ad_params = ''
         self.emails = ''
         self.dm_table = "dm_analysis"
-        self.target_table = "dm_analysis.real_estate_api_daily_yapo"
+        self.target_table = "real_estate_api_daily_yapo"
         self.final_format = {"email": "str",
                                "date": "str",
                                "number_of_views": "Int64",
