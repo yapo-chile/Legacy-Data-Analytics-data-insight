@@ -102,7 +102,7 @@ class InmoAPI2(Query):
                 self.insert_to_dwh_parallel(db_source)
             except Exception as e:
                 self.logger.info(e)
-                self.logger.info(self.emails["email"][i], self.emails["list_id"][i])
+                self.logger.info(str(self.emails["email"][i]) + " " + str(self.emails["list_id"][i]))
         db_source.close_connection()
         db_athena.close_connection()
         del db_source

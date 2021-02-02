@@ -109,7 +109,7 @@ class InmoAPI1(Query):
             del performance
         except Exception as e:
             self.logger.info(e)
-            self.logger.info(email, listid)
+            self.logger.info((str(email) + " " + str(listid)))
 
     def insert_to_dwh_batch(self):
         dwh = Database(conf=self.config.db)
