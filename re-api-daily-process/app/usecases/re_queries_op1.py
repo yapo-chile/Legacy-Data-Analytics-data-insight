@@ -62,11 +62,6 @@ class InmoAPI1(Query):
         self.logger.info(str(final_df))
         return final_df
 
-    @property
-    def dwh_re_api(self):
-        return self.__dwh_re_api
-
-    @dwh_re_api.setter
     def dwh_re_api(self, config):
         self.__dwh_re_api = []
         db_source = Database(conf=self.config.db)
@@ -103,7 +98,7 @@ class InmoAPI1(Query):
 
     def generate(self):
         # List id level parallelism
-        self.dwh_re_api = self.config
+        self.dwh_re_api()
         self.insert_to_dwh_batch()
         self.logger.info("Succesfully saved")
 
