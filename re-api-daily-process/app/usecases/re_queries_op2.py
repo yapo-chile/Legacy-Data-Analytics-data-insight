@@ -90,7 +90,7 @@ class InmoAPI2(Query):
         del db_athena
 
     def performance_query(self, db_source, listid):
-        self.performance = db_source.select_to_dict(self.query_get_athena_performance(listid))
+        self.performance = db_source.get_data(self.query_get_athena_performance(listid))
 
     def ad_params_query(self, db_source, listid):
         self.ad_params = db_source.select_to_dict(self.query_ads_params(listid))

@@ -71,7 +71,7 @@ class InmoAPI3(Query):
         self.logger.info("Information about emails table:")
         self.logger.info(self.emails.head())
         for i in range(len(self.emails["list_id"])):
-            performance = db_athena.select_to_dict(self.query_get_athena_performance(self.emails["list_id"][i]))
+            performance = db_athena.get_data(self.query_get_athena_performance(self.emails["list_id"][i]))
             ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"][i]))
             # ---- JOIN ALL ----
             self.logger.info("PERFORMANCE DF HEAD:")

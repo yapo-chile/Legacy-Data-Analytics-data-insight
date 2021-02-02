@@ -76,7 +76,7 @@ class InmoAPI1(Query):
 
     def mail_iterations(self, listid, db_source, config):
         db_athena = Athena(conf=config.athenaConf)
-        performance = db_athena.select_to_dict(self.query_get_athena_performance(listid))
+        performance = db_athena.get_data(self.query_get_athena_performance(listid))
         db_athena.close_connection()
         del db_athena
         ad_params = db_source.select_to_dict(self.query_ads_params(listid))
