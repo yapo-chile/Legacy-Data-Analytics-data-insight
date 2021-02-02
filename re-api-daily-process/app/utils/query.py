@@ -13,30 +13,63 @@ class Query:
         self.params = params
         self.conf = conf
 
-    def query_get_athena_performance(self, list_id) -> str:
+    def query_get_athena_performance(self, list_id, override=False) -> str:
         """
         Method return str with query of athena ad performance data
         """
-        list_id = int(list_id)
-        query = """
-                SELECT
-                    CAST(date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') as date) AS "date",
-                    cast(split_part(ad_id,':',4) as integer) AS list_id,
-                    count(distinct case when event_type = 'View' and object_type = 'ClassifiedAd' then event_id end) number_of_views,
-                    count(distinct case when event_type = 'Call' then event_id end)-count(distinct case when event_name = 'Ad phone whatsapp number contacted' then event_id end) number_of_calls,
-                    count(distinct case when event_name = 'Ad phone whatsapp number contacted' then event_id end) number_of_call_whatsapp,
-                    count(distinct case when event_type = 'Show' then event_id end) number_of_show_phone,
-                    count(distinct case when event_type = 'Send' then environment_id end) number_of_ad_replies
-                FROM
-                    yapocl_databox.insights_events_behavioral_fact_layer_365d
-                WHERE
-                    ad_id NOT IN ('sdrn:yapocl:classified:', 'sdrn:yapocl:classified:0', 'unknown')
-                AND
-                    CAST(split_part(ad_id,':',4) AS varchar) IN ('""" + str(list_id) + """')
-                AND
-                   date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') = CAST('""" + self.params.get_date_from() + """' as date)
-                GROUP BY 1,2
-            """
+        if override:
+            list_id = list_id.tolist()
+            st = "("
+            for l in range(len(list_id)):
+                if l == len(list_id) - 1:
+                    st += "'" + str(l) + "'"
+                else:
+                    st += "'" + str(l) + "',"
+            st += ")"
+            list_id = st
+            del st
+        else:
+            list_id = int(list_id)
+        if override:
+            query = """
+                        SELECT
+                            CAST(date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') as date) AS "date",
+                            cast(split_part(ad_id,':',4) as integer) AS list_id,
+                            count(distinct case when event_type = 'View' and object_type = 'ClassifiedAd' then event_id end) number_of_views,
+                            count(distinct case when event_type = 'Call' then event_id end)-count(distinct case when event_name = 'Ad phone whatsapp number contacted' then event_id end) number_of_calls,
+                            count(distinct case when event_name = 'Ad phone whatsapp number contacted' then event_id end) number_of_call_whatsapp,
+                            count(distinct case when event_type = 'Show' then event_id end) number_of_show_phone,
+                            count(distinct case when event_type = 'Send' then environment_id end) number_of_ad_replies
+                        FROM
+                            yapocl_databox.insights_events_behavioral_fact_layer_365d
+                        WHERE
+                            ad_id NOT IN ('sdrn:yapocl:classified:', 'sdrn:yapocl:classified:0', 'unknown')
+                        AND
+                            CAST(split_part(ad_id,':',4) AS varchar) IN """ + list_id + """
+                        AND
+                           date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') = CAST('""" + self.params.get_date_from() + """' as date)
+                        GROUP BY 1,2
+                    """
+        else:
+            query = """
+                    SELECT
+                        CAST(date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') as date) AS "date",
+                        cast(split_part(ad_id,':',4) as integer) AS list_id,
+                        count(distinct case when event_type = 'View' and object_type = 'ClassifiedAd' then event_id end) number_of_views,
+                        count(distinct case when event_type = 'Call' then event_id end)-count(distinct case when event_name = 'Ad phone whatsapp number contacted' then event_id end) number_of_calls,
+                        count(distinct case when event_name = 'Ad phone whatsapp number contacted' then event_id end) number_of_call_whatsapp,
+                        count(distinct case when event_type = 'Show' then event_id end) number_of_show_phone,
+                        count(distinct case when event_type = 'Send' then environment_id end) number_of_ad_replies
+                    FROM
+                        yapocl_databox.insights_events_behavioral_fact_layer_365d
+                    WHERE
+                        ad_id NOT IN ('sdrn:yapocl:classified:', 'sdrn:yapocl:classified:0', 'unknown')
+                    AND
+                        CAST(split_part(ad_id,':',4) AS varchar) IN ('""" + str(list_id) + """')
+                    AND
+                       date_parse(cast(year as varchar) || '-' || cast(month as varchar) || '-' || cast(day as varchar),'%Y-%c-%e') = CAST('""" + self.params.get_date_from() + """' as date)
+                    GROUP BY 1,2
+                """
         return query
 
     def query_ads_users(self) -> str:
@@ -86,52 +119,108 @@ class Query:
 
         return command
 
-    def query_ads_params(self, list_id) -> str:
+    def query_ads_params(self, list_id, override=False) -> str:
         """
         Method return str with query of enriched ads parameters
         """
-        list_id = int(list_id)
-        query = """
-                    select
-                        CASE
-                            WHEN aip.estate_type = '1' then 'Departamento'
-                            WHEN aip.estate_type = '2' then 'Casa'
-                            WHEN aip.estate_type = '3' then 'Oficina'
-                            WHEN aip.estate_type = '4' then 'Comercial e industrial'
-                            WHEN aip.estate_type = '5' then 'Terreno'
-                            WHEN aip.estate_type = '6' then 'Estacionamiento, bodega u otro'
-                            WHEN aip.estate_type = '7' then 'Pieza'
-                            WHEN aip.estate_type = '8' then 'Cabaña'
-                            WHEN aip.estate_type = '9' then 'Habitacion'
-                            END AS estate_type_name,
-                        aip.rooms,
-                        aip.bathrooms,
-                        aip.currency,
-                        a.price,
-                        aa.list_id as list_id
-                    from ods.ads_inmo_params aip
-                    inner join (
+        if override:
+            list_id = list_id.tolist()
+            st = "("
+            for l in range(len(list_id)):
+                if l == len(list_id) - 1:
+                    st += str(l)
+                else:
+                    st += str(l) + ","
+            st += ")"
+            list_id = st
+            del st
+        else:
+            list_id = int(list_id)
+        if override:
+            query = """
                         select
-                            ad_id_nk,
-                            cast(a.list_id_nk as varchar) as list_id
-                        from
+                            CASE
+                                WHEN aip.estate_type = '1' then 'Departamento'
+                                WHEN aip.estate_type = '2' then 'Casa'
+                                WHEN aip.estate_type = '3' then 'Oficina'
+                                WHEN aip.estate_type = '4' then 'Comercial e industrial'
+                                WHEN aip.estate_type = '5' then 'Terreno'
+                                WHEN aip.estate_type = '6' then 'Estacionamiento, bodega u otro'
+                                WHEN aip.estate_type = '7' then 'Pieza'
+                                WHEN aip.estate_type = '8' then 'Cabaña'
+                                WHEN aip.estate_type = '9' then 'Habitacion'
+                                END AS estate_type_name,
+                            aip.rooms,
+                            aip.bathrooms,
+                            aip.currency,
+                            a.price,
+                            aa.list_id as list_id
+                        from ods.ads_inmo_params aip
+                        inner join (
+                            select
+                                ad_id_nk,
+                                cast(a.list_id_nk as varchar) as list_id
+                            from
+                                ods.ad a
+                            where
+                                list_id_nk in """ + list_id + """
+                            union all
+                            select
+                                ad_id_nk,
+                                cast(bs.list_id as varchar) as list_id
+                            from
+                                stg.big_sellers_detail bs
+                            where
+                                list_id in """ + list_id + """) aa
+                        on
+                            aip.ad_id_nk=aa.ad_id_nk
+                        left join
                             ods.ad a
-                        where
-                            list_id_nk = """ + str(list_id) + """
-                        union all
+                        on
+                            a.ad_id_nk=aip.ad_id_nk
+                    """
+        else:
+            query = """
                         select
-                            ad_id_nk,
-                            cast(bs.list_id as varchar) as list_id
-                        from
-                            stg.big_sellers_detail bs
-                        where
-                            list_id = """ + str(list_id) + """) aa
-                    on
-                        aip.ad_id_nk=aa.ad_id_nk
-                    left join
-                        ods.ad a
-                    on
-                        a.ad_id_nk=aip.ad_id_nk
-                """
+                            CASE
+                                WHEN aip.estate_type = '1' then 'Departamento'
+                                WHEN aip.estate_type = '2' then 'Casa'
+                                WHEN aip.estate_type = '3' then 'Oficina'
+                                WHEN aip.estate_type = '4' then 'Comercial e industrial'
+                                WHEN aip.estate_type = '5' then 'Terreno'
+                                WHEN aip.estate_type = '6' then 'Estacionamiento, bodega u otro'
+                                WHEN aip.estate_type = '7' then 'Pieza'
+                                WHEN aip.estate_type = '8' then 'Cabaña'
+                                WHEN aip.estate_type = '9' then 'Habitacion'
+                                END AS estate_type_name,
+                            aip.rooms,
+                            aip.bathrooms,
+                            aip.currency,
+                            a.price,
+                            aa.list_id as list_id
+                        from ods.ads_inmo_params aip
+                        inner join (
+                            select
+                                ad_id_nk,
+                                cast(a.list_id_nk as varchar) as list_id
+                            from
+                                ods.ad a
+                            where
+                                list_id_nk = """ + str(list_id) + """
+                            union all
+                            select
+                                ad_id_nk,
+                                cast(bs.list_id as varchar) as list_id
+                            from
+                                stg.big_sellers_detail bs
+                            where
+                                list_id = """ + str(list_id) + """) aa
+                        on
+                            aip.ad_id_nk=aa.ad_id_nk
+                        left join
+                            ods.ad a
+                        on
+                            a.ad_id_nk=aip.ad_id_nk
+                    """
         return query
 
