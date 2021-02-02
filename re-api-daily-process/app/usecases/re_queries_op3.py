@@ -89,7 +89,7 @@ class InmoAPI3(Query):
         self.dwh_re_api_vanilla = self.dwh_re_api_vanilla.astype(self.final_format)
         self.logger.info("First records as evidence to DM ANALISYS - Sequential loop")
         self.logger.info(self.dwh_re_api_vanilla.head())
-        db_source.insert_copy(self.dwh_re_api_vanilla, self.dm_table, self.target_table)
+        db_source.insert_copy(self.dm_table, self.target_table, self.dwh_re_api_vanilla)
 
     def generate(self):
         # Basic sequential case

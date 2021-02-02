@@ -92,7 +92,7 @@ class InmoAPI1(Query):
             data = data.astype(self.final_format)
             self.logger.info("First records as evidence to DM ANALISYS - Parallel email loop")
             self.logger.info(data.head())
-            dwh.insert_copy(data, self.dm_table, self.target_table)
+            dwh.insert_copy(self.dm_table, self.target_table, data)
         dwh.close_connection()
         del dwh
 

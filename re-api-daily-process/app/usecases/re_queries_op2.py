@@ -96,7 +96,7 @@ class InmoAPI2(Query):
         self.dwh_re_api_parallel_queries = self.dwh_re_api_parallel_queries.astype(self.final_format)
         self.logger.info("First records as evidence to DM ANALISYS - Parallel queries")
         self.logger.info(self.dwh_re_api_parallel_queries.head())
-        db_source.insert_copy(self.dwh_re_api_parallel_queries, self.dm_table, self.target_table)
+        db_source.insert_copy(self.dm_table, self.target_table, self.dwh_re_api_parallel_queries)
         self.logger.info("Succesfully saved")
 
     def generate(self):
