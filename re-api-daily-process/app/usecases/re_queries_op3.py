@@ -96,6 +96,10 @@ class InmoAPI3(Query):
             except Exception as e:
                 self.logger.info(e)
                 self.logger.info(str(self.emails["email"][i]) + " " + str(self.emails["list_id"][i]))
+                db_source.close_connection()
+                db_athena.close_connection()
+                db_source = Database(conf=self.config.db)
+                db_athena = Athena(conf=self.config.athenaConf)
         db_source.close_connection()
         db_athena.close_connection()
         del db_source
