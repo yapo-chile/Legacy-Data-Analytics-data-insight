@@ -58,6 +58,8 @@ class InmoAPI1(Query):
         # PARAMS['rooms'] = PARAMS['rooms'].where(pd.notnull(PARAMS['rooms']), None)
         # PARAMS['bathrooms'] = PARAMS['bathrooms'].where(pd.notnull(PARAMS['bathrooms']), None)
         final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').merge(PARAMS, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
+        self.logger.info("CURRENT OUTPUT ROW:")
+        self.logger.info(str(final_df))
         return final_df
 
     @property
@@ -66,7 +68,6 @@ class InmoAPI1(Query):
 
     @dwh_re_api.setter
     def dwh_re_api(self, config):
-        self.logger.info(str(config))
         self.__dwh_re_api = []
         db_source = Database(conf=self.config.db)
         self.emails = db_source.select_to_dict(self.query_ads_users())

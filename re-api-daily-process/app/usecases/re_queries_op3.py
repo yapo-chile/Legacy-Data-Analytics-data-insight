@@ -57,6 +57,8 @@ class InmoAPI3(Query):
         # PARAMS['rooms'] = PARAMS['rooms'].where(pd.notnull(PARAMS['rooms']), None)
         # PARAMS['bathrooms'] = PARAMS['bathrooms'].where(pd.notnull(PARAMS['bathrooms']), None)
         final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').merge(PARAMS, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
+        self.logger.info("CURRENT OUTPUT ROW:")
+        self.logger.info(str(final_df))
         return final_df
 
     @property
@@ -67,7 +69,6 @@ class InmoAPI3(Query):
     def dwh_re_api_vanilla(self, config):
         db_source = Database(conf=self.config.db)
         db_athena = Athena(conf=self.config.athenaConf)
-        self.logger.info(str(config))
         self.emails = db_source.select_to_dict(self.query_ads_users())
         self.logger.info("Information about emails table:")
         self.logger.info(self.emails.head())
