@@ -19,7 +19,6 @@ class InmoAPI1(Query):
         self.params = params
         self.logger = logger
         self.emails = ''
-        self.iteration = 0
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
         self.performance_dummy = {'date': str(self.params.get_date_from()), 'list_id': [0], 'number_of_views': [0],
@@ -71,7 +70,18 @@ class InmoAPI1(Query):
         self.logger.info(str(final_df))
         return final_df
 
-    def dwh_re_api_func(self):
+    def chunkIt(self, seq, num):
+        avg = len(seq) / float(num)
+        out = []
+        last = 0.0
+
+        while last < len(seq):
+            out.append(seq[int(last):int(last + avg)])
+            last += avg
+
+        return out
+
+    def dwh_re_api_func(self, override):
         self.dwh_re_api = []
         db_source = Database(conf=self.config.db)
         db_athena = Athena(conf=self.config.athenaConf)
@@ -79,25 +89,25 @@ class InmoAPI1(Query):
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
         # Parallel mail data insert
-        Parallel(n_jobs=2)(self.mail_iterations(self.emails["list_id"][i], db_source, self.emails["email"][i], db_athena) for i in range(len(self.emails["list_id"])))
+        listid = self.emails["list_id"].tolist()
+        listid = self.chunkIt(listid, 10)
+        Parallel(n_jobs=2)(self.mail_iterations(ls, db_source, db_athena, override) for ls in range(len(listid)))
         db_source.close_connection()
         db_athena.close_connection()
         del db_source
 
     @delayed
     @wrap_non_picklable_objects
-    def mail_iterations(self, listid, db_source, email, db_athena):
-        self.iteration += 1
-        self.logger.info("ITERATION NUMBER {} OF {}".format(str(self.iteration), str(len(self.emails["list_id"]))))
+    def mail_iterations(self, listid, db_source, db_athena, override):
         try:
-            performance = db_athena.get_data(self.query_get_athena_performance(listid))
+            performance = db_athena.get_data(self.query_get_athena_performance(listid, override))
             self.logger.info("PERFORMANCE DF HEAD:")
             self.logger.info(performance.head())
             del db_athena
             if performance.empty:
                 performance = self.performance_dummy
                 performance['list_id'] = listid
-            ad_params = db_source.select_to_dict(self.query_ads_params(listid))
+            ad_params = db_source.select_to_dict(self.query_ads_params(listid, override))
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(ad_params.head())
             # ---- JOIN ALL ----
@@ -109,7 +119,7 @@ class InmoAPI1(Query):
             del performance
         except Exception as e:
             self.logger.info(e)
-            self.logger.info((str(email) + " " + str(listid)))
+            self.logger.info((str(self.emails) + " " + str(listid)))
 
     def insert_to_dwh_batch(self):
         dwh = Database(conf=self.config.db)
@@ -119,9 +129,9 @@ class InmoAPI1(Query):
         dwh.close_connection()
         del dwh
 
-    def generate(self):
+    def generate(self, override):
         # List id level parallelism
-        self.dwh_re_api_func()
+        self.dwh_re_api_func(override)
         self.insert_to_dwh_batch()
         self.logger.info("Succesfully saved")
 

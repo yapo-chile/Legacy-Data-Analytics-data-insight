@@ -67,7 +67,7 @@ class Process:
         if option == 1:
             self.real_state_api_data = InmoAPI1(self.config,
                                              self.params,
-                                             self.logger).generate()
+                                             self.logger).generate(True)
         elif option == 2:
             self.real_state_api_data = InmoAPI2(self.config,
                                                self.params,
