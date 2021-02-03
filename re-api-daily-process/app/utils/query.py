@@ -22,9 +22,9 @@ class Query:
             st = "("
             for l in range(len(list_id)):
                 if l == len(list_id) - 1:
-                    st += "'" + str(l) + "'"
+                    st += "'" + str(list_id[l]) + "'"
                 else:
-                    st += "'" + str(l) + "',"
+                    st += "'" + str(list_id[l]) + "',"
             st += ")"
             list_id = st
             del st
@@ -128,9 +128,9 @@ class Query:
             st = "("
             for l in range(len(list_id)):
                 if l == len(list_id) - 1:
-                    st += str(l)
+                    st += str(list_id[l])
                 else:
-                    st += str(l) + ","
+                    st += str(list_id[l]) + ","
             st += ")"
             list_id = st
             del st
