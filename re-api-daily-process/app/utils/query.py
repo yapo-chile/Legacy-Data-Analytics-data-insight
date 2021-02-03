@@ -20,10 +20,11 @@ class Query:
         if override:
             st = "("
             for l in range(len(list_id)):
-                if l == len(list_id) - 1:
-                    st += "'" + str(list_id[l]) + "'"
-                else:
-                    st += "'" + str(list_id[l]) + "',"
+                if isinstance(list_id[l], int) or isinstance(list_id[l], float):
+                    if l == len(list_id) - 1:
+                        st += "'" + str(list_id[l]) + "'"
+                    else:
+                        st += "'" + str(list_id[l]) + "',"
             st += ")"
             list_id = st
             del st
@@ -125,10 +126,11 @@ class Query:
         if override:
             st = "("
             for l in range(len(list_id)):
-                if l == len(list_id) - 1:
-                    st += str(list_id[l])
-                else:
-                    st += str(list_id[l]) + ","
+                if isinstance(list_id[l], int) or isinstance(list_id[l], float):
+                    if l == len(list_id) - 1:
+                        st += str(list_id[l])
+                    else:
+                        st += str(list_id[l]) + ","
             st += ")"
             list_id = st
             del st
