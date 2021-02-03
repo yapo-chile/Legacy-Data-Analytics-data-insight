@@ -61,7 +61,7 @@ class Process:
         self.logger.info("All good")
         rank = {}
         # for option in [1, 2, 3]:
-        option = 1 # OPTION FIXATED FOR TESTING PURPOSES
+        option = 2 # OPTION FIXATED FOR TESTING PURPOSES
         begin = time()
         self.logger.info("Applying option {}".format(str(option)))
         if option == 1:
@@ -71,7 +71,7 @@ class Process:
         elif option == 2:
             self.real_state_api_data = InmoAPI2(self.config,
                                                self.params,
-                                               self.logger).generate(True)
+                                               self.logger).generate(True, True)
         elif option == 3:
             self.real_state_api_data = InmoAPI3(self.config,
                                                self.params,
