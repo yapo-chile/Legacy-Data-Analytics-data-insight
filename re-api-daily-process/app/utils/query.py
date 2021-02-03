@@ -18,7 +18,6 @@ class Query:
         Method return str with query of athena ad performance data
         """
         if override:
-            list_id = list_id.tolist()
             st = "("
             for l in range(len(list_id)):
                 if l == len(list_id) - 1:
@@ -124,7 +123,6 @@ class Query:
         Method return str with query of enriched ads parameters
         """
         if override:
-            list_id = list_id.tolist()
             st = "("
             for l in range(len(list_id)):
                 if l == len(list_id) - 1:

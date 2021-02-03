@@ -66,6 +66,17 @@ class InmoAPI3(Query):
         self.logger.info(str(final_df))
         return final_df
 
+    def chunkIt(self, seq, num):
+        avg = len(seq) / float(num)
+        out = []
+        last = 0.0
+
+        while last < len(seq):
+            out.append(seq[int(last):int(last + avg)])
+            last += avg
+
+        return out
+
     def dwh_re_api_vanilla(self, override):
         db_source = Database(conf=self.config.db)
         db_athena = Athena(conf=self.config.athenaConf)
@@ -73,24 +84,28 @@ class InmoAPI3(Query):
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
         if override:
-            performance = db_athena.get_data(self.query_get_athena_performance(self.emails["list_id"], override))
-            self.logger.info("PERFORMANCE DF HEAD:")
-            self.logger.info(performance.head())
-            if performance.empty:
-                performance = self.performance_dummy
-                performance['list_id'] = self.emails["list_id"]
-            ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"], override))
-            # ---- JOIN ALL ----
-            self.logger.info("PARAMS DF HEAD:")
-            self.logger.info(ad_params.head())
-            if ad_params.empty:
-                ad_params = self.params_dummy
-                ad_params['list_id'] = self.emails["list_id"]
-            self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
-            self.insert_to_dwh_vanilla(db_source)
-            self.logger.info("Succesfully saved")
-            del ad_params
-            del performance
+            listid = self.emails["list_id"].tolist()
+            listid = self.chunkIt(listid, 10)
+            for ls in listid:
+                performance = db_athena.get_data(self.query_get_athena_performance(ls, override))
+                self.logger.info("PERFORMANCE DF HEAD:")
+                self.logger.info(performance.head())
+                if performance.empty:
+                    performance = self.performance_dummy
+                    performance['list_id'] = self.emails["list_id"]
+                ad_params = db_source.select_to_dict(self.query_ads_params(ls, override))
+                # ---- JOIN ALL ----
+                self.logger.info("PARAMS DF HEAD:")
+                self.logger.info(ad_params.head())
+                if ad_params.empty:
+                    ad_params = self.params_dummy
+                    ad_params['list_id'] = self.emails["list_id"]
+                self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
+                self.insert_to_dwh_vanilla(db_source)
+                self.logger.info("Succesfully saved")
+                del ad_params
+                del performance
+            del listid
         else:
             for i in range(len(self.emails["list_id"])):
                 self.logger.info("ITERATION NUMBER {} OF {}".format(str(i), str(len(self.emails["list_id"]))))
