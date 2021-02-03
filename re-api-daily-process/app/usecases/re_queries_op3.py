@@ -73,13 +73,13 @@ class InmoAPI3(Query):
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
         if override:
-            performance = db_athena.get_data(self.query_get_athena_performance(self.emails["list_id"]))
+            performance = db_athena.get_data(self.query_get_athena_performance(self.emails["list_id"], override))
             self.logger.info("PERFORMANCE DF HEAD:")
             self.logger.info(performance.head())
             if performance.empty:
                 performance = self.performance_dummy
                 performance['list_id'] = self.emails["list_id"]
-            ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"]))
+            ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"], override))
             # ---- JOIN ALL ----
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(ad_params.head())
@@ -91,38 +91,39 @@ class InmoAPI3(Query):
             self.logger.info("Succesfully saved")
             del ad_params
             del performance
-        for i in range(len(self.emails["list_id"])):
-            self.logger.info("ITERATION NUMBER {} OF {}".format(str(i), str(len(self.emails["list_id"]))))
-            try:
-                performance = db_athena.get_data(self.query_get_athena_performance(self.emails["list_id"][i]))
-                self.logger.info("PERFORMANCE DF HEAD:")
-                self.logger.info(performance.head())
-                if performance.empty:
-                    performance = self.performance_dummy
-                    performance['list_id'] = self.emails["list_id"][i]
-                ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"][i]))
-                # ---- JOIN ALL ----
-                self.logger.info("PARAMS DF HEAD:")
-                self.logger.info(ad_params.head())
-                if ad_params.empty:
-                    ad_params = self.params_dummy
-                    ad_params['list_id'] = self.emails["list_id"][i]
-                self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
-                self.insert_to_dwh_vanilla(db_source)
-                self.logger.info("Succesfully saved")
-                del ad_params
-                del performance
-            except Exception as e:
-                self.logger.info(e)
-                self.logger.info(str(self.emails["email"][i]) + " " + str(self.emails["list_id"][i]))
-                db_source.close_connection()
-                db_athena.close_connection()
-                db_source = Database(conf=self.config.db)
-                db_athena = Athena(conf=self.config.athenaConf)
-        db_source.close_connection()
-        db_athena.close_connection()
-        del db_source
-        del db_athena
+        else:
+            for i in range(len(self.emails["list_id"])):
+                self.logger.info("ITERATION NUMBER {} OF {}".format(str(i), str(len(self.emails["list_id"]))))
+                try:
+                    performance = db_athena.get_data(self.query_get_athena_performance(self.emails["list_id"][i]))
+                    self.logger.info("PERFORMANCE DF HEAD:")
+                    self.logger.info(performance.head())
+                    if performance.empty:
+                        performance = self.performance_dummy
+                        performance['list_id'] = self.emails["list_id"][i]
+                    ad_params = db_source.select_to_dict(self.query_ads_params(self.emails["list_id"][i]))
+                    # ---- JOIN ALL ----
+                    self.logger.info("PARAMS DF HEAD:")
+                    self.logger.info(ad_params.head())
+                    if ad_params.empty:
+                        ad_params = self.params_dummy
+                        ad_params['list_id'] = self.emails["list_id"][i]
+                    self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
+                    self.insert_to_dwh_vanilla(db_source)
+                    self.logger.info("Succesfully saved")
+                    del ad_params
+                    del performance
+                except Exception as e:
+                    self.logger.info(e)
+                    self.logger.info(str(self.emails["email"][i]) + " " + str(self.emails["list_id"][i]))
+                    db_source.close_connection()
+                    db_athena.close_connection()
+                    db_source = Database(conf=self.config.db)
+                    db_athena = Athena(conf=self.config.athenaConf)
+            db_source.close_connection()
+            db_athena.close_connection()
+            del db_source
+            del db_athena
 
     def insert_to_dwh_vanilla(self, db_source):
         self.dwh_re_api_vanilla = self.dwh_re_api_vanilla.astype(self.final_format)
