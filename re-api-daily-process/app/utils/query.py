@@ -1,6 +1,6 @@
 from infraestructure.conf import getConf
 from utils.read_params import ReadParams
-import pandas as pd
+import math
 
 
 class Query:
@@ -20,7 +20,7 @@ class Query:
         if override:
             st = "("
             for l in range(len(list_id)):
-                if isinstance(list_id[l], int) or isinstance(list_id[l], float):
+                if isinstance(list_id[l], int) or isinstance(list_id[l], float) or not math.isnan(list_id[l]) or list_id[l] is not None:
                     if l == len(list_id) - 1:
                         st += "'" + str(list_id[l]) + "'"
                     else:
@@ -126,7 +126,7 @@ class Query:
         if override:
             st = "("
             for l in range(len(list_id)):
-                if isinstance(list_id[l], int) or isinstance(list_id[l], float):
+                if isinstance(list_id[l], int) or isinstance(list_id[l], float) or not math.isnan(list_id[l]) or list_id[l] is not None:
                     if l == len(list_id) - 1:
                         st += str(list_id[l])
                     else:
