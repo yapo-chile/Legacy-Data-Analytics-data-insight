@@ -19,13 +19,15 @@ class InmoAPI3(Query):
         self.emails = ''
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
-        self.performance_dummy = {'date': str(self.params.get_date_from()), 'list_id': [0], 'number_of_views': [0], 'number_of_calls': [0],
-                                  'number_of_call_whatsapp': [0], 'number_of_show_phone': [0], 'number_of_ad_replies': [0]}
-        self.performance_dummy = pd.DataFrame.from_dict(self.performance_dummy)
-        self.params_dummy = {'list_id': [0], 'estate_type_name': [""], 'rooms': [0],
+        self.performance_dummy_dict = {'date': str(self.params.get_date_from()), 'list_id': [0], 'number_of_views': [0],
+                                       'number_of_calls': [0],
+                                       'number_of_call_whatsapp': [0], 'number_of_show_phone': [0],
+                                       'number_of_ad_replies': [0]}
+        self.performance_dummy = pd.DataFrame.from_dict(self.performance_dummy_dict)
+        self.params_dummy_dict = {'list_id': [0], 'estate_type_name': [""], 'rooms': [0],
                                   'bathrooms': [0], 'currency': [""],
                                   'price': [0]}
-        self.params_dummy = pd.DataFrame.from_dict(self.params_dummy)
+        self.params_dummy = pd.DataFrame.from_dict(self.params_dummy_dict)
         self.final_format = {"email": "str",
                                "date": "str",
                                "number_of_views": "Int64",
@@ -85,22 +87,30 @@ class InmoAPI3(Query):
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
         listid = self.emails["list_id"].tolist()
-        listid = self.chunkIt(listid, 8 + int((len(listid) % 30000)/10000))
-        self.logger.info("Batch size: {}".format(str(8 + int((len(listid) % 30000)/10000))))
+        listid = self.chunkIt(listid, int((len(listid) % 30000)/10000))
+        self.logger.info("Batch size: {}".format(str(int((len(listid) % 30000)/10000))))
         for ls in listid:
             performance = db_athena.get_data(self.query_get_athena_performance(ls))
             self.logger.info("PERFORMANCE DF HEAD:")
             self.logger.info(performance.head())
             if performance.empty:
                 performance = self.performance_dummy
-                performance['list_id'] = self.emails["list_id"]
+                performance["list_id"] = ls[0]
+                for i in range(1, len(ls)):
+                    dummy = self.performance_dummy_dict
+                    dummy['list_id'] = ls[i]
+                    performance.append(dummy, ignore_index=True)
             ad_params = db_source.select_to_dict(self.query_ads_params(ls))
             # ---- JOIN ALL ----
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(ad_params.head())
             if ad_params.empty:
                 ad_params = self.params_dummy
-                ad_params['list_id'] = self.emails["list_id"]
+                ad_params["list_id"] = ls[0]
+                for i in range(1, len(ls)):
+                    dummy = self.params_dummy_dict
+                    dummy['list_id'] = ls[i]
+                    ad_params.append(dummy, ignore_index=True)
             self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
             self.insert_to_dwh_vanilla(db_source)
             self.logger.info("Succesfully saved")
