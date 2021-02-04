@@ -96,7 +96,7 @@ class InmoAPI3(Query):
         listid = self.emails["list_id"].tolist()
         chunks = 8 + int(len(listid)/10000)
         listid = self.chunkIt(listid, chunks)
-        self.logger.info("Batch size: {}".format(str(chunks)))
+        self.logger.info("Batch size: 1/{}".format(str(chunks)))
         del chunks
         for ls in listid:
             performance = db_athena.get_data(self.query_get_athena_performance(ls))
