@@ -126,6 +126,7 @@ class InmoAPI2(Query):
                 self.performance = self.performance.append(dummy, ignore_index=True)
         else:
             self.check_performance(ls)
+        self.performance = self.performance.dropna(subset=['list_id'])
         if self.ad_params.empty:
             self.ad_params = self.params_dummy
             self.ad_params["list_id"] = ls[0]
@@ -136,6 +137,7 @@ class InmoAPI2(Query):
         else:
             self.check_params(ls)
         self.ad_params["link_type"].fillna("NULL", inplace=True)
+        self.ad_params = self.ad_params.dropna(subset=['list_id'])
         self.logger.info("PERFORMANCE DF:")
         self.logger.info(self.performance)
         self.logger.info("PARAMS DF:")

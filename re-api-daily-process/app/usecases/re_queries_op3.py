@@ -114,6 +114,7 @@ class InmoAPI3(Query):
                         dummy = self.performance_dummy_dict
                         dummy['list_id'] = ls[i]
                         performance = performance.append(dummy, ignore_index=True)
+            performance = performance.dropna(subset=['list_id'])
             self.logger.info("PERFORMANCE DF:")
             self.logger.info(performance)
             ad_params = db_source.select_to_dict(self.query_ads_params(ls))
@@ -133,6 +134,7 @@ class InmoAPI3(Query):
                         dummy['list_id'] = ls[i]
                         ad_params = ad_params.append(dummy, ignore_index=True)
             ad_params["link_type"].fillna("NULL", inplace=True)
+            ad_params = ad_params.dropna(subset=['list_id'])
             self.logger.info("PARAMS DF:")
             self.logger.info(ad_params)
             self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
