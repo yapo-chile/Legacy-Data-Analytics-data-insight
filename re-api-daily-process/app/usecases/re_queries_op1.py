@@ -31,17 +31,18 @@ class InmoAPI1(Query):
                              'price': [0]}
         self.params_dummy = pd.DataFrame.from_dict(self.params_dummy)
         self.final_format = {"email": "str",
-                               "date": "str",
-                               "number_of_views": "Int64",
-                               "number_of_calls": "Int64",
-                               "number_of_call_whatsapp": "Int64",
-                               "number_of_show_phone": "Int64",
-                               "number_of_ad_replies": "Int64",
-                               "estate_type_name": "str",
-                               "rooms": "Int64",
-                               "bathrooms": "Int64",
-                               "currency": "str",
-                               "price": "Int64"}
+                             "date": "str",
+                             "number_of_views": "Int64",
+                             "number_of_calls": "Int64",
+                             "number_of_call_whatsapp": "Int64",
+                             "number_of_show_phone": "Int64",
+                             "number_of_ad_replies": "Int64",
+                             "estate_type_name": "str",
+                             "rooms": "Int64",
+                             "bathrooms": "Int64",
+                             "currency": "str",
+                             "price": "Int64",
+                             "link_type": "Int64"}
 
     def joined_params(self, EMAIL_LISTID, PERFORMANCE, PARAMS):
         """

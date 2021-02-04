@@ -32,17 +32,18 @@ class InmoAPI2(Query):
                              'price': [0]}
         self.params_dummy = pd.DataFrame.from_dict(self.params_dummy)
         self.final_format = {"email": "str",
-                               "date": "str",
-                               "number_of_views": "Int64",
-                               "number_of_calls": "Int64",
-                               "number_of_call_whatsapp": "Int64",
-                               "number_of_show_phone": "Int64",
-                               "number_of_ad_replies": "Int64",
-                               "estate_type_name": "str",
-                               "rooms": "Int64",
-                               "bathrooms": "Int64",
-                               "currency": "str",
-                               "price": "Int64"}
+                             "date": "str",
+                             "number_of_views": "Int64",
+                             "number_of_calls": "Int64",
+                             "number_of_call_whatsapp": "Int64",
+                             "number_of_show_phone": "Int64",
+                             "number_of_ad_replies": "Int64",
+                             "estate_type_name": "str",
+                             "rooms": "Int64",
+                             "bathrooms": "Int64",
+                             "currency": "str",
+                             "price": "Int64",
+                             "link_type": "Int64"}
 
     def joined_params(self, EMAIL_LISTID, PERFORMANCE, PARAMS):
         """
@@ -82,7 +83,7 @@ class InmoAPI2(Query):
 
         return out
 
-    def dwh_re_api_parallel_queries(self, override):
+    def dwh_re_api_parallel_queries(self, override, experimental):
         db_source = Database(conf=self.config.db)
         db_athena = Athena(conf=self.config.athenaConf)
         self.emails = db_source.select_to_dict(self.query_ads_users())
@@ -91,49 +92,17 @@ class InmoAPI2(Query):
         if override:
             listid = self.emails["list_id"].tolist()
             listid = self.chunkIt(listid, 10)
+            process = []
             for ls in listid:
-                try:
-                    # ---- PARALLEL ----
-                    performance = Process(target=self.performance_query, args=(db_athena, ls, override))
-                    performance.start()
-                    ad_params = Process(target=self.ad_params_query, args=(db_source, ls, override))
-                    ad_params.start()
-                    performance.join()
-                    ad_params.join()
-                    # ---- JOIN ALL ----
-                    self.logger.info("PERFORMANCE DF HEAD:")
-                    self.logger.info(self.performance.head())
-                    self.logger.info("PARAMS DF HEAD:")
-                    self.logger.info(self.ad_params.head())
-                    if self.performance.empty:
-                        self.performance = self.performance_dummy
-                        self.performance["list_id"] = ls
-                    if self.ad_params.empty:
-                        self.ad_params = self.params_dummy
-                        self.ad_params["list_id"] = ls
-                    self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
-                    self.insert_to_dwh_parallel(db_source)
-                except Exception as e:
-                    self.logger.info(e)
-                    db_source.close_connection()
-                    db_athena.close_connection()
-                    db_source = Database(conf=self.config.db)
-                    db_athena = Athena(conf=self.config.athenaConf)
-                    self.performance = db_athena.get_data(self.query_get_athena_performance(ls, override))
-                    self.logger.info("PERFORMANCE DF HEAD:")
-                    self.logger.info(self.performance.head())
-                    if self.performance.empty:
-                        self.performance = self.performance_dummy
-                        self.performance['list_id'] = ls
-                    self.ad_params = db_source.select_to_dict(self.query_ads_params(ls, override))
-                    # ---- JOIN ALL ----
-                    self.logger.info("PARAMS DF HEAD:")
-                    self.logger.info(self.ad_params.head())
-                    if self.ad_params.empty:
-                        self.ad_params = self.params_dummy
-                        self.ad_params['list_id'] = ls
-                    self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
-                    self.insert_to_dwh_parallel(db_source)
+                if experimental:
+                    mini_process = Process(target=self.magnum_bullet, args=(ls, db_source, db_athena, override))
+                    mini_process.start()
+                    process.append(mini_process)
+                else:
+                    self.magnum_bullet(ls, db_source, db_athena, override)
+            for proc in process:
+                proc.join()
+
         for i in range(len(self.emails["list_id"])):
             self.logger.info("ITERATION NUMBER {} OF {}".format(str(i), str(len(self.emails["list_id"]))))
             try:
@@ -184,6 +153,50 @@ class InmoAPI2(Query):
         del db_source
         del db_athena
 
+    def magnum_bullet(self, ls, db_source, db_athena, override):
+        try:
+            # ---- PARALLEL ----
+            performance = Process(target=self.performance_query, args=(db_athena, ls, override))
+            performance.start()
+            ad_params = Process(target=self.ad_params_query, args=(db_source, ls, override))
+            ad_params.start()
+            performance.join()
+            ad_params.join()
+            # ---- JOIN ALL ----
+            self.logger.info("PERFORMANCE DF HEAD:")
+            self.logger.info(self.performance.head())
+            self.logger.info("PARAMS DF HEAD:")
+            self.logger.info(self.ad_params.head())
+            if self.performance.empty:
+                self.performance = self.performance_dummy
+                self.performance["list_id"] = ls
+            if self.ad_params.empty:
+                self.ad_params = self.params_dummy
+                self.ad_params["list_id"] = ls
+            self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
+            self.insert_to_dwh_parallel(db_source)
+        except Exception as e:
+            self.logger.info(e)
+            db_source.close_connection()
+            db_athena.close_connection()
+            db_source = Database(conf=self.config.db)
+            db_athena = Athena(conf=self.config.athenaConf)
+            self.performance = db_athena.get_data(self.query_get_athena_performance(ls, override))
+            self.logger.info("PERFORMANCE DF HEAD:")
+            self.logger.info(self.performance.head())
+            if self.performance.empty:
+                self.performance = self.performance_dummy
+                self.performance['list_id'] = ls
+            self.ad_params = db_source.select_to_dict(self.query_ads_params(ls, override))
+            # ---- JOIN ALL ----
+            self.logger.info("PARAMS DF HEAD:")
+            self.logger.info(self.ad_params.head())
+            if self.ad_params.empty:
+                self.ad_params = self.params_dummy
+                self.ad_params['list_id'] = ls
+            self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
+            self.insert_to_dwh_parallel(db_source)
+
     def performance_query(self, db_source, listid, override):
         self.performance = db_source.get_data(self.query_get_athena_performance(listid, override))
 
@@ -195,9 +208,9 @@ class InmoAPI2(Query):
         db_source.insert_copy(self.dm_table, self.target_table, self.dwh_re_api_parallel_queries)
         self.logger.info("Succesfully saved")
 
-    def generate(self, override):
+    def generate(self, override, experimental):
         # Query level parallelism
-        self.dwh_re_api_parallel_queries(override)
+        self.dwh_re_api_parallel_queries(override, experimental)
 
         gc.collect()
         self.logger.info("Uncollectable memory garbage: {}. If empty, all memory of the current "

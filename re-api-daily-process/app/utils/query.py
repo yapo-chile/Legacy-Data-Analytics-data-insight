@@ -154,12 +154,14 @@ class Query:
                             aip.bathrooms,
                             aip.currency,
                             a.price,
-                            aa.list_id as list_id
+                            aa.list_id as list_id,
+                            link_type
                         from ods.ads_inmo_params aip
                         inner join (
                             select
                                 ad_id_nk,
-                                cast(a.list_id_nk as varchar) as list_id
+                                cast(a.list_id_nk as varchar) as list_id,
+                                'NULL' as link_type
                             from
                                 ods.ad a
                             where
@@ -167,7 +169,8 @@ class Query:
                             union all
                             select
                                 ad_id_nk,
-                                cast(bs.list_id as varchar) as list_id
+                                cast(bs.list_id as varchar) as list_id,
+                                link_type
                             from
                                 stg.big_sellers_detail bs
                             where
@@ -197,12 +200,14 @@ class Query:
                             aip.bathrooms,
                             aip.currency,
                             a.price,
-                            aa.list_id as list_id
+                            aa.list_id as list_id,
+                            link_type
                         from ods.ads_inmo_params aip
                         inner join (
                             select
                                 ad_id_nk,
-                                cast(a.list_id_nk as varchar) as list_id
+                                cast(a.list_id_nk as varchar) as list_id,
+                                'NULL' as link_type
                             from
                                 ods.ad a
                             where
@@ -210,7 +215,8 @@ class Query:
                             union all
                             select
                                 ad_id_nk,
-                                cast(bs.list_id as varchar) as list_id
+                                cast(bs.list_id as varchar) as list_id,
+                                link_type
                             from
                                 stg.big_sellers_detail bs
                             where
