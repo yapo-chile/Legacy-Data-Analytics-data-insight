@@ -90,7 +90,7 @@ class InmoAPI2(Query):
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
         listid = self.emails["list_id"].tolist()
-        listid = self.chunkIt(listid, 10 + (len(listid) % 30000))
+        listid = self.chunkIt(listid, 10 + int(len(listid) % 30000))
         for ls in listid:
             self.magnum_bullet(ls)
         del listid
