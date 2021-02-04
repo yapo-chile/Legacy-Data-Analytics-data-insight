@@ -60,8 +60,8 @@ class Process:
     def generate(self):
         self.logger.info("All good")
         # for option in [1, 2, 3]:
-        cpu_usage = psutil.cpu_percent()
-        memory_usage = psutil.virtual_memory()
+        cpu_usage = psutil.cpu_percent(interval=0.5)
+        memory_usage = int(psutil.virtual_memory().total - psutil.virtual_memory().available)
         if cpu_usage <= 60 and memory_usage <= 60:  # is the machine ready for multiprocessing?
             option = 2
         else:  # choose sequential option is the machine is busy
