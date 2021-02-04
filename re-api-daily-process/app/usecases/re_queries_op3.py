@@ -19,15 +19,22 @@ class InmoAPI3(Query):
         self.emails = ''
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
-        self.performance_dummy_dict = {'date': str(self.params.get_date_from()), 'list_id': [0], 'number_of_views': [0],
+        self.performance_dummy = {'date': str(self.params.get_date_from()), 'list_id': [0], 'number_of_views': [0],
                                        'number_of_calls': [0],
                                        'number_of_call_whatsapp': [0], 'number_of_show_phone': [0],
                                        'number_of_ad_replies': [0]}
-        self.performance_dummy = pd.DataFrame.from_dict(self.performance_dummy_dict)
-        self.params_dummy_dict = {'list_id': [0], 'estate_type_name': [""], 'rooms': [0],
+        self.performance_dummy = pd.DataFrame.from_dict(self.performance_dummy)
+        self.performance_dummy_dict = {'date': str(self.params.get_date_from()), 'list_id': 0, 'number_of_views': 0,
+                                       'number_of_calls': 0,
+                                       'number_of_call_whatsapp': 0, 'number_of_show_phone': 0,
+                                       'number_of_ad_replies': 0}
+        self.params_dummy = {'list_id': [0], 'estate_type_name': [""], 'rooms': [0],
                                   'bathrooms': [0], 'currency': [""],
                                   'price': [0]}
-        self.params_dummy = pd.DataFrame.from_dict(self.params_dummy_dict)
+        self.params_dummy = pd.DataFrame.from_dict(self.params_dummy)
+        self.params_dummy_dict = {'list_id': 0, 'estate_type_name': "", 'rooms': 0,
+                                  'bathrooms': 0, 'currency': "",
+                                  'price': 0}
         self.final_format = {"email": "str",
                                "date": "str",
                                "number_of_views": "Int64",
