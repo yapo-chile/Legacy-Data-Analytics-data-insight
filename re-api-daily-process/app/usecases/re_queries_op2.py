@@ -90,7 +90,7 @@ class InmoAPI2(Query):
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
         listid = self.emails["list_id"].tolist()
-        chunks = 3 + int(len(listid) / 10000)
+        chunks = 8 + int(len(listid) / 10000)
         listid = self.chunkIt(listid, chunks)
         self.logger.info("Batch size: {}".format(str(chunks)))
         del chunks
