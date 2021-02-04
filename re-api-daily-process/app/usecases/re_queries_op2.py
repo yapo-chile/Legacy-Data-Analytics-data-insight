@@ -137,7 +137,7 @@ class InmoAPI2(Query):
             del dummy
         else:
             self.check_params(ls)
-        self.ad_params["link_id"].fillna("NULL", inplace=True)
+        self.ad_params["link_type"].fillna("NULL", inplace=True)
         self.logger.info("PERFORMANCE DF HEAD:")
         self.logger.info(self.performance.head())
         self.logger.info("PARAMS DF HEAD:")

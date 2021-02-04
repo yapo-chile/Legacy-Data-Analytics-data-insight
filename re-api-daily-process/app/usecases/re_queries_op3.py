@@ -138,7 +138,7 @@ class InmoAPI3(Query):
                         ad_params = ad_params.append(dummy, ignore_index=True)
                 del dummy
                 del params
-            ad_params["link_id"].fillna("NULL", inplace=True)
+            ad_params["link_type"].fillna("NULL", inplace=True)
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(ad_params.head())
             self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
