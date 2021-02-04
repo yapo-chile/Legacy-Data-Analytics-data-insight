@@ -90,8 +90,8 @@ class InmoAPI2(Query):
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
         listid = self.emails["list_id"].tolist()
-        listid = self.chunkIt(listid, int((len(listid) % 30000)/10000))
-        self.logger.info("Batch size: {}".format(str(int(len(listid) % 30000))))
+        listid = self.chunkIt(listid, 8 + int((len(listid) % 30000)/10000))
+        self.logger.info("Batch size: {}".format(str(8 + int(len(listid) % 30000))))
         for ls in listid:
             self.magnum_bullet(ls)
         del listid
@@ -119,6 +119,7 @@ class InmoAPI2(Query):
                     dummy = self.performance_dummy_dict
                     dummy['list_id'] = ls[i]
                     self.performance.append(dummy, ignore_index=True)
+                del dummy
             if self.ad_params.empty:
                 self.ad_params = self.params_dummy
                 self.ad_params["list_id"] = ls[0]
@@ -126,6 +127,7 @@ class InmoAPI2(Query):
                     dummy = self.params_dummy_dict
                     dummy['list_id'] = ls[i]
                     self.ad_params.append(dummy, ignore_index=True)
+                del dummy
             self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
             self.insert_to_dwh_parallel(db_source)
         except Exception as e:
