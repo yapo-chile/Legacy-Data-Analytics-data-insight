@@ -61,11 +61,12 @@ class Process:
         self.logger.info("All good")
         # for option in [1, 2, 3]:
         cpu_usage = psutil.cpu_percent(interval=0.5)
-        memory_usage = int(psutil.virtual_memory().total - psutil.virtual_memory().available)/int(psutil.virtual_memory().total)
+        memory_usage = 100*int(psutil.virtual_memory().total - psutil.virtual_memory().available)/int(psutil.virtual_memory().total)
         if cpu_usage <= 60 and memory_usage <= 60:  # is the machine ready for multiprocessing?
             option = 2
         else:  # choose sequential option is the machine is busy
             option = 3
+        self.logger.info("Total memory use before ETL: {} - Total CPU use before ETL: {}".format(memory_usage, cpu_usage))
         # option = 2  # OPTION FIXATED FOR TESTING PURPOSES
         # bump
         begin = time()
@@ -79,8 +80,11 @@ class Process:
                                                self.params,
                                                self.logger).generate()
         delta = time() - begin
+        cpu_usage = psutil.cpu_percent(interval=0.5)
+        memory_usage = 100 * int(psutil.virtual_memory().total - psutil.virtual_memory().available) / int(
+            psutil.virtual_memory().total)
         self.logger.info(f"----- Total runtime of the option is {delta}")
-        self.logger.info("Total memory use of ETL: {} - Total CPU use of ETL: {}".format(memory_usage, cpu_usage))
+        self.logger.info("Total memory use after ETL: {} - Total CPU use after ETL: {}".format(memory_usage, cpu_usage))
         del cpu_usage
         del memory_usage
         del option
