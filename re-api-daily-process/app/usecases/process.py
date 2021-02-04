@@ -67,7 +67,7 @@ class Process:
         else:  # choose sequential option is the machine is busy
             option = 3
         self.logger.info("Total % memory use before ETL: {} - Total % CPU use before ETL: {}".format(memory_usage, cpu_usage))
-        option = 3  # OPTION FIXATED FOR TESTING PURPOSES
+        # option = 3  # OPTION FIXATED FOR TESTING PURPOSES
         # bump
         begin = time()
         self.logger.info("----- Applying option {}".format(str(option)))
