@@ -87,8 +87,8 @@ class InmoAPI3(Query):
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
         listid = self.emails["list_id"].tolist()
-        listid = self.chunkIt(listid, 8 + int((len(listid) % 30000)/10000))
-        self.logger.info("Batch size: {}".format(str(8 + int((len(listid) % 30000)/10000))))
+        listid = self.chunkIt(listid, 4 + int((len(listid) % 30000)/10000))
+        self.logger.info("Batch size: {}".format(str(4 + int((len(listid) % 30000)/10000))))
         for ls in listid:
             performance = db_athena.get_data(self.query_get_athena_performance(ls))
             self.logger.info("PERFORMANCE DF HEAD:")
