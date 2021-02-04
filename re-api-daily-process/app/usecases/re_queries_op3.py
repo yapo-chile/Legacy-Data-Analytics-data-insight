@@ -30,11 +30,11 @@ class InmoAPI3(Query):
                                        'number_of_ad_replies': 0}
         self.params_dummy = {'list_id': [0], 'estate_type_name': [""], 'rooms': [0],
                                   'bathrooms': [0], 'currency': [""],
-                                  'price': [0], 'link_id': [""]}
+                                  'price': [0], 'link_type': [""]}
         self.params_dummy = pd.DataFrame.from_dict(self.params_dummy)
         self.params_dummy_dict = {'list_id': 0, 'estate_type_name': "", 'rooms': 0,
                                   'bathrooms': 0, 'currency': "",
-                                  'price': 0, 'link_id': ""}
+                                  'price': 0, 'link_type': ""}
         self.final_format = {"email": "str",
                                "date": "str",
                                "number_of_views": "Int64",
