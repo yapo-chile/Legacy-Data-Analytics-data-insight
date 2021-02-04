@@ -145,11 +145,11 @@ class InmoAPI2(Query):
         del db_source
         del db_athena
 
-    def performance_query(self, db_source, listid, override):
-        self.performance = db_source.get_data(self.query_get_athena_performance(listid, override))
+    def performance_query(self, db_source, listid):
+        self.performance = db_source.get_data(self.query_get_athena_performance(listid))
 
-    def ad_params_query(self, db_source, listid, override):
-        self.ad_params = db_source.select_to_dict(self.query_ads_params(listid, override))
+    def ad_params_query(self, db_source, listid):
+        self.ad_params = db_source.select_to_dict(self.query_ads_params(listid))
 
     def insert_to_dwh_parallel(self, db_source):
         self.dwh_re_api_parallel_queries = self.dwh_re_api_parallel_queries.astype(self.final_format)
