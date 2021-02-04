@@ -123,9 +123,7 @@ class InmoAPI2(Query):
                 for i in range(1, len(ls)):
                     dummy = self.performance_dummy_dict
                     dummy['list_id'] = ls[i]
-                    self.logger.info(str(dummy))
-                    self.performance.append(dummy, ignore_index=True)
-                    self.logger.info(str(self.performance))
+                    self.performance = self.performance.append(dummy, ignore_index=True)
                 del dummy
             if self.ad_params.empty:
                 self.ad_params = self.params_dummy
@@ -133,9 +131,7 @@ class InmoAPI2(Query):
                 for i in range(1, len(ls)):
                     dummy = self.params_dummy_dict
                     dummy['list_id'] = ls[i]
-                    self.logger.info(str(dummy))
-                    self.ad_params.append(dummy, ignore_index=True)
-                    self.logger.info(str(self.ad_params))
+                    self.ad_params = self.ad_params.append(dummy, ignore_index=True)
                 del dummy
             self.logger.info("PERFORMANCE DF HEAD:")
             self.logger.info(self.performance.head())
