@@ -93,7 +93,6 @@ class InmoAPI2(Query):
 
     def dwh_re_api_parallel_queries(self):
         db_source = Database(conf=self.config.db)
-        db_athena = Athena(conf=self.config.athenaConf)
         self.emails = db_source.select_to_dict(self.query_ads_users())
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
