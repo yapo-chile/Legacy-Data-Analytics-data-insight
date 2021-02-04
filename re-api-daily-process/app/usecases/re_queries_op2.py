@@ -90,9 +90,10 @@ class InmoAPI2(Query):
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
         listid = self.emails["list_id"].tolist()
-        listid = self.chunkIt(listid, 4 + int(len(listid)/10000))
-        self.logger.info("Batch size: {}".format(str(4 + int(len(listid)/10000))))
-        self.logger.info("Batch enhancement: {} {}".format(str(int(len(listid) / 10000)), str(len(listid))))
+        chunks = 3 + int(len(listid) / 10000)
+        listid = self.chunkIt(listid, chunks)
+        self.logger.info("Batch size: {}".format(str(chunks)))
+        del chunks
         for ls in listid:
             self.magnum_bullet(ls)
         del listid
