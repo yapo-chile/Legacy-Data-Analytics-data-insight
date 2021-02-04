@@ -138,8 +138,6 @@ class InmoAPI3(Query):
                         ad_params = ad_params.append(dummy, ignore_index=True)
                 del dummy
                 del params
-            ad_params["rooms"].fillna("NULL", inplace=True)
-            ad_params["bathrooms"].fillna("NULL", inplace=True)
             ad_params["link_id"].fillna("NULL", inplace=True)
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(ad_params.head())
