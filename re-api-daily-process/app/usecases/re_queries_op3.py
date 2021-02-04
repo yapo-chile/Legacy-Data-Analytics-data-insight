@@ -93,8 +93,6 @@ class InmoAPI3(Query):
         del chunks
         for ls in listid:
             performance = db_athena.get_data(self.query_get_athena_performance(ls))
-            self.logger.info("PERFORMANCE DF HEAD:")
-            self.logger.info(performance.head())
             if performance.empty:
                 performance = self.performance_dummy
                 performance["list_id"] = ls[0]
@@ -103,10 +101,10 @@ class InmoAPI3(Query):
                     dummy['list_id'] = ls[i]
                     performance.append(dummy, ignore_index=True)
                 del dummy
+            self.logger.info("PERFORMANCE DF HEAD:")
+            self.logger.info(performance.head())
             ad_params = db_source.select_to_dict(self.query_ads_params(ls))
             # ---- JOIN ALL ----
-            self.logger.info("PARAMS DF HEAD:")
-            self.logger.info(ad_params.head())
             if ad_params.empty:
                 ad_params = self.params_dummy
                 ad_params["list_id"] = ls[0]
@@ -115,6 +113,8 @@ class InmoAPI3(Query):
                     dummy['list_id'] = ls[i]
                     ad_params.append(dummy, ignore_index=True)
                 del dummy
+            self.logger.info("PARAMS DF HEAD:")
+            self.logger.info(ad_params.head())
             self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
             self.insert_to_dwh_vanilla(db_source)
             self.logger.info("Succesfully saved")
