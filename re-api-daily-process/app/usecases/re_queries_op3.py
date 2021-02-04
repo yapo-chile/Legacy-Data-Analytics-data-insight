@@ -6,8 +6,6 @@ from utils.read_params import ReadParams
 from infraestructure.athena import Athena
 import gc
 import pandas as pd
-from joblib import Parallel, delayed
-import psutil
 
 
 class InmoAPI3(Query):
