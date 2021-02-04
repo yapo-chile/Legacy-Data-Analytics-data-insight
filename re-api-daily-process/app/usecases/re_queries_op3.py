@@ -101,6 +101,7 @@ class InmoAPI3(Query):
                     dummy['list_id'] = ls[i]
                     self.logger.info(str(dummy))
                     performance.append(dummy, ignore_index=True)
+                    self.logger.info(str(performance))
                 del dummy
             self.logger.info("PERFORMANCE DF HEAD:")
             self.logger.info(performance.head())
@@ -114,6 +115,7 @@ class InmoAPI3(Query):
                     dummy['list_id'] = ls[i]
                     self.logger.info(str(dummy))
                     ad_params.append(dummy, ignore_index=True)
+                    self.logger.info(str(ad_params))
                 del dummy
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(ad_params.head())
