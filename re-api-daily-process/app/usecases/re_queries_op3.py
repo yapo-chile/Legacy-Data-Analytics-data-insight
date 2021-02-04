@@ -38,7 +38,7 @@ class InmoAPI3(Query):
                                "bathrooms": "Int64",
                                "currency": "str",
                                "price": "Int64",
-                               "link_type": "Int64"}
+                               "link_type": "str"}
 
     def joined_params(self, EMAIL_LISTID, PERFORMANCE, PARAMS):
         """
