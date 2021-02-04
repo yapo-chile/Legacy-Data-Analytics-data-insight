@@ -151,6 +151,8 @@ class InmoAPI2(Query):
                         self.ad_params = self.ad_params.append(dummy, ignore_index=True)
                 del dummy
                 del params
+            self.ad_params["rooms"].fillna("NULL", inplace = True)
+            self.ad_params["bathrooms"].fillna("NULL", inplace=True)
             self.logger.info("PERFORMANCE DF HEAD:")
             self.logger.info(self.performance.head())
             self.logger.info("PARAMS DF HEAD:")
