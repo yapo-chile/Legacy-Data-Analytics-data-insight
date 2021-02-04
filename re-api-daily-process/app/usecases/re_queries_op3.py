@@ -18,8 +18,6 @@ class InmoAPI3(Query):
         self.config = config
         self.params = params
         self.logger = logger
-        self.performance = pd.DataFrame()
-        self.ad_params = pd.DataFrame()
         self.emails = ''
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
@@ -113,20 +111,14 @@ class InmoAPI3(Query):
                     performance = performance.append(dummy, ignore_index=True)
                 del dummy
             else:
-                cpu_usage = psutil.cpu_percent(interval=0.5)
-                if cpu_usage > 60:
-                    perf = performance['list_id'].tolist()
-                    for i in range(len(ls)):
-                        if ls[i] not in perf:
-                            dummy = self.performance_dummy_dict
-                            dummy['list_id'] = ls[i]
-                            performance = performance.append(dummy, ignore_index=True)
-                    del dummy
-                    del perf
-                else:
-                    self.check_performance(ls, performance)
-                    performance = self.performance
-                del cpu_usage
+                perf = performance['list_id'].tolist()
+                for i in range(len(ls)):
+                    if ls[i] not in perf:
+                        dummy = self.performance_dummy_dict
+                        dummy['list_id'] = ls[i]
+                        performance = performance.append(dummy, ignore_index=True)
+                del dummy
+                del perf
             self.logger.info("PERFORMANCE DF HEAD:")
             self.logger.info(performance.head())
             ad_params = db_source.select_to_dict(self.query_ads_params(ls))
@@ -140,20 +132,14 @@ class InmoAPI3(Query):
                     ad_params = ad_params.append(dummy, ignore_index=True)
                 del dummy
             else:
-                cpu_usage = psutil.cpu_percent(interval=0.5)
-                if cpu_usage > 60:
-                    params = ad_params['list_id'].tolist()
-                    for i in range(len(ls)):
-                        if ls[i] not in params:
-                            dummy = self.params_dummy_dict
-                            dummy['list_id'] = ls[i]
-                            ad_params = ad_params.append(dummy, ignore_index=True)
-                    del dummy
-                    del params
-                else:
-                    self.check_params(ls, ad_params)
-                    ad_params = self.ad_params
-                del cpu_usage
+                params = ad_params['list_id'].tolist()
+                for i in range(len(ls)):
+                    if ls[i] not in params:
+                        dummy = self.params_dummy_dict
+                        dummy['list_id'] = ls[i]
+                        ad_params = ad_params.append(dummy, ignore_index=True)
+                del dummy
+                del params
             ad_params["rooms"].fillna("NULL", inplace=True)
             ad_params["bathrooms"].fillna("NULL", inplace=True)
             self.logger.info("PARAMS DF HEAD:")
@@ -168,34 +154,6 @@ class InmoAPI3(Query):
         db_athena.close_connection()
         del db_source
         del db_athena
-
-    def check_params(self, ls, ad_params):
-        params = ad_params['list_id'].tolist()
-        Parallel(n_jobs=2)(delayed(self.check_params_aux)(ls[i], params, ad_params) for i in range(len(ls)))
-        del params
-
-    def check_params_aux(self, inp, params, ad_params):
-        if inp not in params:
-            dummy = self.params_dummy_dict
-            dummy['list_id'] = inp
-            ad_params = ad_params.append(dummy, ignore_index=True)
-        self.ad_params = ad_params
-        del ad_params
-        del dummy
-
-    def check_performance(self, ls, performance):
-        perf = performance['list_id'].tolist()
-        Parallel(n_jobs=2)(delayed(self.check_performance_aux)(ls[i], perf, performance) for i in range(len(ls)))
-        del perf
-
-    def check_performance_aux(self, inp, performance, perf):
-        if inp not in performance:
-            dummy = self.params_dummy_dict
-            dummy['list_id'] = inp
-            perf = perf.append(dummy, ignore_index=True)
-        self.performance = perf
-        del perf
-        del dummy
 
     def insert_to_dwh_vanilla(self, db_source):
         self.dwh_re_api_vanilla = self.dwh_re_api_vanilla.astype(self.final_format)
