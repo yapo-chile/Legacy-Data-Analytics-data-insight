@@ -124,7 +124,6 @@ class InmoAPI2(Query):
                 dummy = self.performance_dummy_dict
                 dummy['list_id'] = ls[i]
                 self.performance = self.performance.append(dummy, ignore_index=True)
-            del dummy
         else:
             self.check_performance(ls)
         if self.ad_params.empty:
@@ -134,7 +133,6 @@ class InmoAPI2(Query):
                 dummy = self.params_dummy_dict
                 dummy['list_id'] = ls[i]
                 self.ad_params = self.ad_params.append(dummy, ignore_index=True)
-            del dummy
         else:
             self.check_params(ls)
         self.ad_params["link_type"].fillna("NULL", inplace=True)
@@ -159,7 +157,6 @@ class InmoAPI2(Query):
             dummy = self.params_dummy_dict
             dummy['list_id'] = inp
             self.ad_params = self.ad_params.append(dummy, ignore_index=True)
-        del dummy
 
     def check_performance(self, ls):
         performance = self.performance['list_id'].tolist()
@@ -171,7 +168,6 @@ class InmoAPI2(Query):
             dummy = self.params_dummy_dict
             dummy['list_id'] = inp
             self.performance = self.performance.append(dummy, ignore_index=True)
-        del dummy
 
     def performance_query(self, db_source, listid):
         self.performance = db_source.get_data(self.query_get_athena_performance(listid))
