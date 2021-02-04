@@ -4,7 +4,6 @@ from infraestructure.athena import Athena
 from infraestructure.psql import Database
 from utils.query import Query
 from utils.read_params import ReadParams
-from .re_queries_op1 import InmoAPI1
 from .re_queries_op2 import InmoAPI2
 from .re_queries_op3 import InmoAPI3
 from time import time
