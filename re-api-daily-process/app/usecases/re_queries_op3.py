@@ -114,8 +114,8 @@ class InmoAPI3(Query):
                         dummy = self.performance_dummy_dict
                         dummy['list_id'] = ls[i]
                         performance = performance.append(dummy, ignore_index=True)
-            self.logger.info("PERFORMANCE DF HEAD:")
-            self.logger.info(performance.head())
+            self.logger.info("PERFORMANCE DF:")
+            self.logger.info(performance)
             ad_params = db_source.select_to_dict(self.query_ads_params(ls))
             # ---- JOIN ALL ----
             if ad_params.empty:
@@ -133,8 +133,8 @@ class InmoAPI3(Query):
                         dummy['list_id'] = ls[i]
                         ad_params = ad_params.append(dummy, ignore_index=True)
             ad_params["link_type"].fillna("NULL", inplace=True)
-            self.logger.info("PARAMS DF HEAD:")
-            self.logger.info(ad_params.head())
+            self.logger.info("PARAMS DF:")
+            self.logger.info(ad_params)
             self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
             self.insert_to_dwh_vanilla(db_source)
             self.logger.info("Succesfully saved")
