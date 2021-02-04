@@ -109,7 +109,7 @@ class InmoAPI3(Query):
                     performance = performance.append(dummy, ignore_index=True)
                 del dummy
             else:
-                perf = performance.tolist()
+                perf = performance['list_id'].tolist()
                 for i in range(len(ls)):
                     if ls[i] not in perf:
                         dummy = self.performance_dummy_dict
@@ -130,7 +130,7 @@ class InmoAPI3(Query):
                     ad_params = ad_params.append(dummy, ignore_index=True)
                 del dummy
             else:
-                params = ad_params.tolist()
+                params = ad_params['list_id'].tolist()
                 for i in range(len(ls)):
                     if ls[i] not in params:
                         dummy = self.params_dummy_dict
