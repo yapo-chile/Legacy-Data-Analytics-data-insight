@@ -8,6 +8,7 @@ from .re_queries_op1 import InmoAPI1
 from .re_queries_op2 import InmoAPI2
 from .re_queries_op3 import InmoAPI3
 from time import time
+import psutil
 
 
 class Process:
@@ -59,27 +60,29 @@ class Process:
 
     def generate(self):
         self.logger.info("All good")
-        rank = {}
         # for option in [1, 2, 3]:
-        option = 2 # OPTION FIXATED FOR TESTING PURPOSES
+        cpu_usage = psutil.cpu_percent()
+        memory_usage = psutil.virtual_memory()
+        if cpu_usage <= 60 and memory_usage <= 60:  # is the machine ready for multiprocessing?
+            option = 2
+        else:  # choose sequential option is the machine is busy
+            option = 3
+        option = 2  # OPTION FIXATED FOR TESTING PURPOSES
         begin = time()
-        self.logger.info("Applying option {}".format(str(option)))
-        if option == 1:
-            self.real_state_api_data = InmoAPI1(self.config,
-                                             self.params,
-                                             self.logger).generate(True)
-        elif option == 2:
+        self.logger.info("----- Applying option {}".format(str(option)))
+        if option == 2:  # parallel option
             self.real_state_api_data = InmoAPI2(self.config,
                                                self.params,
-                                               self.logger).generate(True, True)
-        elif option == 3:
+                                               self.logger).generate()
+        elif option == 3:  # sequential option
             self.real_state_api_data = InmoAPI3(self.config,
                                                self.params,
-                                               self.logger).generate(True)
+                                               self.logger).generate()
         delta = time() - begin
-        self.logger.info(f"Total runtime of the option is {delta}")
-        rank[option] = delta
-        sorted_tuples = sorted(rank.items(), key=lambda item: item[1])
-        sorted_rank = {k: v for k, v in sorted_tuples}
-        for item in sorted_rank.items():
-            self.logger.info("Option {} got runtime of {}".format(str(item[0]), str(item[1])))
+        self.logger.info(f"----- Total runtime of the option is {delta}")
+        self.logger.info("Total memory use of ETL: {} - Total CPU use of ETL: {}".format(memory_usage, cpu_usage))
+        del cpu_usage
+        del memory_usage
+        del option
+        del begin
+        del delta
