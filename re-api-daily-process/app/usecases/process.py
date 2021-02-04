@@ -80,11 +80,12 @@ class Process:
                                                self.params,
                                                self.logger).generate()
         delta = time() - begin
-        cpu_usage = psutil.cpu_percent(interval=0.5)
-        memory_usage = 100 * int(psutil.virtual_memory().total - psutil.virtual_memory().available) / int(
+        cpu_usage_2 = psutil.cpu_percent(interval=0.5)
+        memory_usage_2 = 100 * int(psutil.virtual_memory().total - psutil.virtual_memory().available) / int(
             psutil.virtual_memory().total)
         self.logger.info(f"----- Total runtime of the option is {delta}")
-        self.logger.info("Total memory use after ETL: {} - Total CPU use after ETL: {}".format(memory_usage, cpu_usage))
+        self.logger.info("Total memory use after ETL: {} - Total CPU use after ETL: {}".format(memory_usage_2, cpu_usage_2))
+        self.logger.info("Total memory use variation of ETL: {} - Total CPU use variation of ETL: {}".format(((memory_usage_2/memory_usage)-1)*100, ((cpu_usage_2/cpu_usage) - 1)*100)
         del cpu_usage
         del memory_usage
         del option
