@@ -93,7 +93,6 @@ class InmoAPI2(Query):
 
     def dwh_re_api_parallel_queries(self):
         db_source = Database(conf=self.config.db)
-        db_athena = Athena(conf=self.config.athenaConf)
         self.emails = db_source.select_to_dict(self.query_ads_users())
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
@@ -103,14 +102,14 @@ class InmoAPI2(Query):
         self.logger.info("Batch size: 1/{}".format(str(len(listid))))
         del chunks
         for ls in listid:
-            self.magnum_bullet(ls, db_source, db_athena)
+            self.magnum_bullet(ls)
         del listid
         db_source.close_connection()
-        db_athena.close_connection()
         del db_source
-        del db_athena
 
-    def magnum_bullet(self, ls, db_source, db_athena):
+    def magnum_bullet(self, ls):
+        db_source = Database(conf=self.config.db)
+        db_athena = Athena(conf=self.config.athenaConf)
         # ---- PARALLEL ----
         performance = Process(target=self.performance_query, args=(db_athena, ls))
         performance.start()
@@ -146,6 +145,10 @@ class InmoAPI2(Query):
         self.logger.info(self.ad_params)
         self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
         self.insert_to_dwh_parallel(db_source)
+        db_source.close_connection()
+        db_athena.close_connection()
+        del db_source
+        del db_athena
 
     def check_params(self, ls):
         params = self.ad_params['list_id'].tolist()
