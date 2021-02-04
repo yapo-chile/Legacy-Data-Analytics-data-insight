@@ -66,7 +66,7 @@ class Process:
             option = 2
         else:  # choose sequential option is the machine is busy
             option = 3
-        self.logger.info("Total memory use before ETL: {} - Total CPU use before ETL: {}".format(memory_usage, cpu_usage))
+        self.logger.info("Total % memory use before ETL: {} - Total % CPU use before ETL: {}".format(memory_usage, cpu_usage))
         # option = 2  # OPTION FIXATED FOR TESTING PURPOSES
         # bump
         begin = time()
@@ -84,8 +84,8 @@ class Process:
         memory_usage_2 = 100 * int(psutil.virtual_memory().total - psutil.virtual_memory().available) / int(
             psutil.virtual_memory().total)
         self.logger.info(f"----- Total runtime of the option is {delta}")
-        self.logger.info("Total memory use after ETL: {} - Total CPU use after ETL: {}".format(memory_usage_2, cpu_usage_2))
-        self.logger.info("Total memory use variation of ETL: {} - Total CPU use variation of ETL: {}".format(((memory_usage_2/memory_usage)-1)*100, ((cpu_usage_2/cpu_usage) - 1)*100))
+        self.logger.info("Total % memory use after ETL: {} - Total % CPU use after ETL: {}".format(memory_usage_2, cpu_usage_2))
+        self.logger.info("Total % memory use variation of ETL: {} - Total % CPU use variation of ETL: {}".format(((memory_usage_2/memory_usage)-1)*100, ((cpu_usage_2/cpu_usage) - 1)*100))
         del cpu_usage
         del memory_usage
         del cpu_usage_2
