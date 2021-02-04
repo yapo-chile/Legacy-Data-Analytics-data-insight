@@ -90,7 +90,7 @@ class Process:
             psutil.virtual_memory().total)
         self.logger.info(f"----- Total runtime of the option is {delta}")
         self.logger.info("Total % memory use after ETL: {} - Total % CPU use after ETL: {}".format(memory_usage_2, cpu_usage_2))
-        self.logger.info("Total % memory use variation of ETL: {} - Total % CPU use variation of ETL: {}".format(((memory_usage_2/memory_usage)-1)*100, ((cpu_usage_2/cpu_usage) - 1)*100))
+        self.logger.info("Total % memory use variation of ETL: {}".format(((memory_usage_2/memory_usage)-1)*100))
         del cpu_usage
         del memory_usage
         del cpu_usage_2
