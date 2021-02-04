@@ -175,22 +175,26 @@ class InmoAPI2(Query):
     def check_params(self, ls):
         params = self.ad_params['list_id'].tolist()
         Parallel(n_jobs=2)(delayed(self.check_params_aux)(ls[i], params) for i in range(len(ls)))
+        del params
 
     def check_params_aux(self, inp, params):
         if inp not in params:
             dummy = self.params_dummy_dict
             dummy['list_id'] = inp
             self.ad_params = self.ad_params.append(dummy, ignore_index=True)
+        del dummy
 
     def check_performance(self, ls):
         performance = self.performance['list_id'].tolist()
         Parallel(n_jobs=2)(delayed(self.check_performance_aux)(ls[i], performance) for i in range(len(ls)))
+        del performance
 
     def check_performance_aux(self, inp, performance):
         if inp not in performance:
             dummy = self.params_dummy_dict
             dummy['list_id'] = inp
             self.performance = self.performance.append(dummy, ignore_index=True)
+        del dummy
 
     def performance_query(self, db_source, listid):
         self.performance = db_source.get_data(self.query_get_athena_performance(listid))

@@ -172,6 +172,7 @@ class InmoAPI3(Query):
     def check_params(self, ls, ad_params):
         params = ad_params['list_id'].tolist()
         Parallel(n_jobs=2)(delayed(self.check_params_aux)(ls[i], params, ad_params) for i in range(len(ls)))
+        del params
 
     def check_params_aux(self, inp, params, ad_params):
         if inp not in params:
@@ -179,10 +180,13 @@ class InmoAPI3(Query):
             dummy['list_id'] = inp
             ad_params = ad_params.append(dummy, ignore_index=True)
         self.ad_params = ad_params
+        del ad_params
+        del dummy
 
     def check_performance(self, ls, performance):
         perf = performance['list_id'].tolist()
         Parallel(n_jobs=2)(delayed(self.check_performance_aux)(ls[i], perf, performance) for i in range(len(ls)))
+        del perf
 
     def check_performance_aux(self, inp, performance, perf):
         if inp not in performance:
@@ -190,6 +194,8 @@ class InmoAPI3(Query):
             dummy['list_id'] = inp
             perf = perf.append(dummy, ignore_index=True)
         self.performance = perf
+        del perf
+        del dummy
 
     def insert_to_dwh_vanilla(self, db_source):
         self.dwh_re_api_vanilla = self.dwh_re_api_vanilla.astype(self.final_format)
