@@ -66,7 +66,7 @@ class Process:
             option = 2
         else:  # choose sequential option is the machine is busy
             option = 3
-        option = 2  # OPTION FIXATED FOR TESTING PURPOSES
+        # option = 2  # OPTION FIXATED FOR TESTING PURPOSES
         # bump
         begin = time()
         self.logger.info("----- Applying option {}".format(str(option)))
