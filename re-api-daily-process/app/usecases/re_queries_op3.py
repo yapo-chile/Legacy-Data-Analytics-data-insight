@@ -108,6 +108,15 @@ class InmoAPI3(Query):
                     dummy['list_id'] = ls[i]
                     performance = performance.append(dummy, ignore_index=True)
                 del dummy
+            else:
+                perf = performance.tolist()
+                for i in range(len(ls)):
+                    if ls[i] not in perf:
+                        dummy = self.performance_dummy_dict
+                        dummy['list_id'] = ls[i]
+                        performance = performance.append(dummy, ignore_index=True)
+                del dummy
+                del perf
             self.logger.info("PERFORMANCE DF HEAD:")
             self.logger.info(performance.head())
             ad_params = db_source.select_to_dict(self.query_ads_params(ls))
@@ -120,6 +129,15 @@ class InmoAPI3(Query):
                     dummy['list_id'] = ls[i]
                     ad_params = ad_params.append(dummy, ignore_index=True)
                 del dummy
+            else:
+                params = ad_params.tolist()
+                for i in range(len(ls)):
+                    if ls[i] not in params:
+                        dummy = self.params_dummy_dict
+                        dummy['list_id'] = ls[i]
+                        ad_params = ad_params.append(dummy, ignore_index=True)
+                del dummy
+                del params
             self.logger.info("PARAMS DF HEAD:")
             self.logger.info(ad_params.head())
             self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
