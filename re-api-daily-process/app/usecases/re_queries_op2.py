@@ -109,64 +109,42 @@ class InmoAPI2(Query):
     def magnum_bullet(self, ls):
         db_source = Database(conf=self.config.db)
         db_athena = Athena(conf=self.config.athenaConf)
-        try:
-            # ---- PARALLEL ----
-            performance = Process(target=self.performance_query, args=(db_athena, ls))
-            performance.start()
-            ad_params = Process(target=self.ad_params_query, args=(db_source, ls))
-            ad_params.start()
-            performance.join()
-            ad_params.join()
-            # ---- JOIN ALL ----
-            if self.performance.empty:
-                self.performance = self.performance_dummy
-                self.performance["list_id"] = ls[0]
-                for i in range(1, len(ls)):
-                    dummy = self.performance_dummy_dict
-                    dummy['list_id'] = ls[i]
-                    self.performance = self.performance.append(dummy, ignore_index=True)
-                del dummy
-            else:
-                self.check_performance(ls)
-            if self.ad_params.empty:
-                self.ad_params = self.params_dummy
-                self.ad_params["list_id"] = ls[0]
-                for i in range(1, len(ls)):
-                    dummy = self.params_dummy_dict
-                    dummy['list_id'] = ls[i]
-                    self.ad_params = self.ad_params.append(dummy, ignore_index=True)
-                del dummy
-            else:
-                self.check_params(ls)
-            self.ad_params["rooms"].fillna("NULL", inplace = True)
-            self.ad_params["bathrooms"].fillna("NULL", inplace=True)
-            self.logger.info("PERFORMANCE DF HEAD:")
-            self.logger.info(self.performance.head())
-            self.logger.info("PARAMS DF HEAD:")
-            self.logger.info(self.ad_params.head())
-            self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
-            self.insert_to_dwh_parallel(db_source)
-        except Exception as e:
-            self.logger.info(e)
-            db_source.close_connection()
-            db_athena.close_connection()
-            db_source = Database(conf=self.config.db)
-            db_athena = Athena(conf=self.config.athenaConf)
-            self.performance = db_athena.get_data(self.query_get_athena_performance(ls))
-            self.logger.info("PERFORMANCE DF HEAD:")
-            self.logger.info(self.performance.head())
-            if self.performance.empty:
-                self.performance = self.performance_dummy
-                self.performance['list_id'] = ls
-            self.ad_params = db_source.select_to_dict(self.query_ads_params(ls))
-            # ---- JOIN ALL ----
-            self.logger.info("PARAMS DF HEAD:")
-            self.logger.info(self.ad_params.head())
-            if self.ad_params.empty:
-                self.ad_params = self.params_dummy
-                self.ad_params['list_id'] = ls
-            self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
-            self.insert_to_dwh_parallel(db_source)
+        # ---- PARALLEL ----
+        performance = Process(target=self.performance_query, args=(db_athena, ls))
+        performance.start()
+        ad_params = Process(target=self.ad_params_query, args=(db_source, ls))
+        ad_params.start()
+        performance.join()
+        ad_params.join()
+        # ---- JOIN ALL ----
+        if self.performance.empty:
+            self.performance = self.performance_dummy
+            self.performance["list_id"] = ls[0]
+            for i in range(1, len(ls)):
+                dummy = self.performance_dummy_dict
+                dummy['list_id'] = ls[i]
+                self.performance = self.performance.append(dummy, ignore_index=True)
+            del dummy
+        else:
+            self.check_performance(ls)
+        if self.ad_params.empty:
+            self.ad_params = self.params_dummy
+            self.ad_params["list_id"] = ls[0]
+            for i in range(1, len(ls)):
+                dummy = self.params_dummy_dict
+                dummy['list_id'] = ls[i]
+                self.ad_params = self.ad_params.append(dummy, ignore_index=True)
+            del dummy
+        else:
+            self.check_params(ls)
+        self.ad_params["rooms"].fillna("NULL", inplace = True)
+        self.ad_params["bathrooms"].fillna("NULL", inplace=True)
+        self.logger.info("PERFORMANCE DF HEAD:")
+        self.logger.info(self.performance.head())
+        self.logger.info("PARAMS DF HEAD:")
+        self.logger.info(self.ad_params.head())
+        self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
+        self.insert_to_dwh_parallel(db_source)
         db_source.close_connection()
         db_athena.close_connection()
         del db_source

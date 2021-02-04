@@ -72,9 +72,14 @@ class Process:
         begin = time()
         self.logger.info("----- Applying option {}".format(str(option)))
         if option == 2:  # parallel option
-            self.real_state_api_data = InmoAPI2(self.config,
-                                               self.params,
-                                               self.logger).generate()
+            try:
+                self.real_state_api_data = InmoAPI2(self.config,
+                                                   self.params,
+                                                   self.logger).generate()
+            except:
+                self.real_state_api_data = InmoAPI3(self.config,
+                                                    self.params,
+                                                    self.logger).generate()
         elif option == 3:  # sequential option
             self.real_state_api_data = InmoAPI3(self.config,
                                                self.params,
