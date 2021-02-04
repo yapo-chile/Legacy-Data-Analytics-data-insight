@@ -7,6 +7,7 @@ from multiprocessing import Process
 from infraestructure.athena import Athena
 import gc
 import pandas as pd
+from joblib import Parallel, delayed
 
 
 class InmoAPI2(Query):
@@ -102,14 +103,12 @@ class InmoAPI2(Query):
         self.logger.info("Batch size: 1/{}".format(str(len(listid))))
         del chunks
         for ls in listid:
-            self.magnum_bullet(ls, db_athena, db_source)
-        db_source.close_connection()
-        db_athena.close_connection()
-        del db_source
-        del db_athena
+            self.magnum_bullet(ls)
         del listid
 
-    def magnum_bullet(self, ls, db_athena, db_source):
+    def magnum_bullet(self, ls):
+        db_source = Database(conf=self.config.db)
+        db_athena = Athena(conf=self.config.athenaConf)
         try:
             # ---- PARALLEL ----
             performance = Process(target=self.performance_query, args=(db_athena, ls))
@@ -128,14 +127,7 @@ class InmoAPI2(Query):
                     self.performance = self.performance.append(dummy, ignore_index=True)
                 del dummy
             else:
-                performance = self.performance['list_id'].tolist()
-                for i in range(len(ls)):
-                    if ls[i] not in performance:
-                        dummy = self.performance_dummy_dict
-                        dummy['list_id'] = ls[i]
-                        self.performance = self.performance.append(dummy, ignore_index=True)
-                del dummy
-                del performance
+                self.check_performance(ls)
             if self.ad_params.empty:
                 self.ad_params = self.params_dummy
                 self.ad_params["list_id"] = ls[0]
@@ -145,14 +137,7 @@ class InmoAPI2(Query):
                     self.ad_params = self.ad_params.append(dummy, ignore_index=True)
                 del dummy
             else:
-                params = self.ad_params['list_id'].tolist()
-                for i in range(len(ls)):
-                    if ls[i] not in params:
-                        dummy = self.params_dummy_dict
-                        dummy['list_id'] = ls[i]
-                        self.ad_params = self.ad_params.append(dummy, ignore_index=True)
-                del dummy
-                del params
+                self.check_params(ls)
             self.ad_params["rooms"].fillna("NULL", inplace = True)
             self.ad_params["bathrooms"].fillna("NULL", inplace=True)
             self.logger.info("PERFORMANCE DF HEAD:")
@@ -182,6 +167,30 @@ class InmoAPI2(Query):
                 self.ad_params['list_id'] = ls
             self.dwh_re_api_parallel_queries = self.joined_params(self.emails, self.performance, self.ad_params)
             self.insert_to_dwh_parallel(db_source)
+        db_source.close_connection()
+        db_athena.close_connection()
+        del db_source
+        del db_athena
+
+    def check_params(self, ls):
+        params = self.ad_params['list_id'].tolist()
+        Parallel(n_jobs=2)(delayed(self.check_params_aux)(ls[i], params) for i in range(len(ls)))
+
+    def check_params_aux(self, inp, params):
+        if inp not in params:
+            dummy = self.params_dummy_dict
+            dummy['list_id'] = inp
+            self.ad_params = self.ad_params.append(dummy, ignore_index=True)
+
+    def check_performance(self, ls):
+        performance = self.performance['list_id'].tolist()
+        Parallel(n_jobs=2)(delayed(self.check_performance_aux)(ls[i], performance) for i in range(len(ls)))
+
+    def check_performance_aux(self, inp, performance):
+        if inp not in performance:
+            dummy = self.params_dummy_dict
+            dummy['list_id'] = inp
+            self.performance = self.performance.append(dummy, ignore_index=True)
 
     def performance_query(self, db_source, listid):
         self.performance = db_source.get_data(self.query_get_athena_performance(listid))
