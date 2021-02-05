@@ -4,8 +4,7 @@ from infraestructure.athena import Athena
 from infraestructure.psql import Database
 from utils.query import Query
 from utils.read_params import ReadParams
-from .re_queries_op2 import InmoAPI2
-from .re_queries_op3 import InmoAPI3
+from .re_queries import InmoAPI3
 from time import time
 import psutil
 
@@ -62,28 +61,12 @@ class Process:
         # for option in [1, 2, 3]:
         cpu_usage = psutil.cpu_percent(interval=0.5)
         memory_usage = 100*int(psutil.virtual_memory().total - psutil.virtual_memory().available)/int(psutil.virtual_memory().total)
-        if cpu_usage <= 60 and memory_usage <= 60:  # is the machine ready for multiprocessing?
-            option = 2
-        else:  # choose sequential option is the machine is busy
-            option = 3
-        self.logger.info("Total % memory use before ETL: {} - Total % CPU use before ETL: {}".format(memory_usage, cpu_usage))
-        # option = 3  # OPTION FIXATED FOR TESTING PURPOSES
-        # bump
+        self.logger.info(
+            "Total % memory use before ETL: {} - Total % CPU use before ETL: {}".format(memory_usage, cpu_usage))
         begin = time()
-        self.logger.info("----- Applying option {}".format(str(option)))
-        if option == 2:  # parallel option
-            try:
-                self.real_state_api_data = InmoAPI2(self.config,
-                                                   self.params,
-                                                   self.logger).generate()
-            except:
-                self.real_state_api_data = InmoAPI3(self.config,
-                                                    self.params,
-                                                    self.logger).generate()
-        elif option == 3:  # sequential option
-            self.real_state_api_data = InmoAPI3(self.config,
-                                               self.params,
-                                               self.logger).generate()
+        self.real_state_api_data = InmoAPI3(self.config,
+                                           self.params,
+                                           self.logger).generate()
         delta = time() - begin
         cpu_usage_2 = psutil.cpu_percent(interval=0.5)
         memory_usage_2 = 100 * int(psutil.virtual_memory().total - psutil.virtual_memory().available) / int(
@@ -95,6 +78,5 @@ class Process:
         del memory_usage
         del cpu_usage_2
         del memory_usage_2
-        del option
         del begin
         del delta
