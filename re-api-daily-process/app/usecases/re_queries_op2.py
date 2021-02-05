@@ -3,7 +3,8 @@
 from infraestructure.psql import Database
 from utils.query import Query
 from utils.read_params import ReadParams
-from multiprocessing import Process
+# from multiprocessing import Process
+from threading import Thread
 from infraestructure.athena import Athena
 import gc
 import pandas as pd
@@ -111,9 +112,9 @@ class InmoAPI2(Query):
         db_source = Database(conf=self.config.db)
         db_athena = Athena(conf=self.config.athenaConf)
         # ---- PARALLEL ----
-        performance = Process(target=self.performance_query, args=(db_athena, ls))
+        performance = Thread(target=self.performance_query, args=(db_athena, ls))
         performance.start()
-        ad_params = Process(target=self.ad_params_query, args=(db_source, ls))
+        ad_params = Thread(target=self.ad_params_query, args=(db_source, ls))
         ad_params.start()
         performance.join()
         ad_params.join()
