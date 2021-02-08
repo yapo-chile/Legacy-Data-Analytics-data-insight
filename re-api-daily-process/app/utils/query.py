@@ -49,6 +49,55 @@ class Query:
                 """
         return query
 
+    def query_pro_user_mail_performance(self) -> str:
+        """
+        Method return str with query of daily ads for each big seller
+        """
+        command = """
+                    SELECT
+                        email,
+                        type
+                        From(
+                        SELECT distinct
+                            s.email,
+                            case
+                                when spd.seller_id_fk is null then 'PRI'
+                                else 'pro'
+                            end as type
+                        from
+                            ods.active_ads aa
+                        inner join
+                            ods.ad a using(ad_id_nk)
+                        left join
+                            ods.seller_pro_details spd using(seller_id_fk, category_id_fk)
+                        left join ods.seller s
+                            on a.seller_id_fk =s.seller_id_pk
+                        left join
+                            stg.big_sellers_detail bs on bs.ad_id_nk::int = a.ad_id_nk
+                        where
+                            spd.seller_id_fk is not null
+                        and
+                            a.category_id_fk in (47,48)
+                        and
+                            bs.list_id is null
+                        union all
+                        SELECT distinct
+                            s.email,
+                            'bigseller' as type
+                        from
+                            ods.active_ads aa
+                        inner join
+                            ods.ad a using(ad_id_nk)
+                        inner join
+                            stg.big_sellers_detail bs on bs.ad_id_nk::int = a.ad_id_nk
+                        left join ods.seller s
+                            on a.seller_id_fk =s.seller_id_pk
+                        where
+                            a.category_id_fk in (47,48))aa
+                """
+
+        return command
+
     def query_ads_users(self) -> str:
         """
         Method return str with query of daily ads for each big seller
