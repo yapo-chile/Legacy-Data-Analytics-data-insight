@@ -19,6 +19,8 @@ class InmoAPI3(Query):
         self.emails = ''
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
+        self.target_table_emails = "inmo_pro_user_emails"
+        self.target_table_emails_input = "pro_user_mail_performance"
         self.performance_dummy = {'date': str(self.params.get_date_from()), 'list_id': [0], 'number_of_views': [0],
                                        'number_of_calls': [0],
                                        'number_of_call_whatsapp': [0], 'number_of_show_phone': [0],
@@ -90,9 +92,16 @@ class InmoAPI3(Query):
     def dwh_re_api_vanilla(self):
         db_source = Database(conf=self.config.db)
         db_athena = Athena(conf=self.config.athenaConf)
+        # Update emails table in DW for the next query result to be updated as well
+        input_emails = db_source.select_to_dict(self.query_pro_user_mail_performance())
+        db_source.insert_copy(self.dm_table, self.target_table_emails_input, input_emails)
+        del input_emails
+        # Get emails and list_ids, write them to DW
         self.emails = db_source.select_to_dict(self.query_ads_users())
+        db_source.insert_copy(self.dm_table, self.target_table_emails, self.emails)
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
+
         listid = self.emails["list_id"].tolist()
         chunks = 8 + int(len(listid)/10000)
         listid = self.chunkIt(listid, chunks)
