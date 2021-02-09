@@ -51,7 +51,7 @@ class Query:
 
     def query_pro_user_mail_performance(self) -> str:
         """
-        Method return str with query of daily ads for each big seller
+        Method return str with query of emails per type of user
         """
         command = """
                     SELECT

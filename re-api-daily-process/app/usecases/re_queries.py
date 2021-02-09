@@ -93,9 +93,10 @@ class InmoAPI3(Query):
         db_source = Database(conf=self.config.db)
         db_athena = Athena(conf=self.config.athenaConf)
         # Update emails table in DW for the next query result to be updated as well
-        input_emails = db_source.select_to_dict(self.query_pro_user_mail_performance())
-        db_source.insert_copy(self.dm_table, self.target_table_emails_input, input_emails)
-        del input_emails
+
+        # input_emails = db_source.select_to_dict(self.query_pro_user_mail_performance())
+        # db_source.insert_copy(self.dm_table, self.target_table_emails_input, input_emails)
+        # del input_emails
         # Get emails and list_ids, write them to DW
         self.emails = db_source.select_to_dict(self.query_ads_users())
         db_source.insert_copy(self.dm_table, self.target_table_emails, self.emails)
