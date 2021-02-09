@@ -72,10 +72,8 @@ class Query:
                             ods.seller_pro_details spd using(seller_id_fk, category_id_fk)
                         left join ods.seller s
                             on a.seller_id_fk =s.seller_id_pk
-                        left join
-                            stg.big_sellers_detail bs on bs.ad_id_nk::int = a.ad_id_nk
-                        where
-                            spd.seller_id_fk is not null
+                        left join stg.big_sellers_detail bs 
+                        on (bs.ad_id_nk::int = a.ad_id_nk and bs.list_id is null)
                         and
                             a.category_id_fk in (47,48)
                         and
