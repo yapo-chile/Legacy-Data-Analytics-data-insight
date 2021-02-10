@@ -21,6 +21,7 @@ class InmoAPI3(Query):
         self.target_table = "real_estate_api_daily_yapo"
         self.target_table_emails = "inmo_pro_user_emails"
         self.target_table_emails_input = "pro_user_mail_performance"
+        self.target_table_emails_historical = "inmo_pro_user_emails_backup"
         self.performance_dummy = {'date': str(self.params.get_date_from()), 'list_id': [0], 'number_of_views': [0],
                                        'number_of_calls': [0],
                                        'number_of_call_whatsapp': [0], 'number_of_show_phone': [0],
@@ -96,6 +97,14 @@ class InmoAPI3(Query):
         db_source.execute_command('TRUNCATE TABLE {}.{};'.format(self.dm_table, self.target_table_emails_input))
         self.logger.info("Truncated {}.{}".format(self.dm_table, self.target_table_emails_input))
         input_emails = db_source.select_to_dict(self.query_pro_user_mail_performance())
+        self.logger.info("Information about input emails table:")
+        self.logger.info(str(input_emails))
+        self.logger.info("Information about input emails table's duplicated values:")
+        self.logger.info(str(input_emails[input_emails["email"].duplicated(keep="last")]))
+        input_emails = input_emails.sort_values(by=['type'])
+        input_emails = input_emails.drop_duplicates(subset=['email'], keep='last')
+        self.logger.info("Information about input emails table without duplicates:")
+        self.logger.info(str(input_emails))
         db_source.insert_copy(self.dm_table, self.target_table_emails_input, input_emails)
         del input_emails
 
@@ -103,9 +112,15 @@ class InmoAPI3(Query):
         db_source.execute_command('TRUNCATE TABLE {}.{};'.format(self.dm_table, self.target_table_emails))
         self.logger.info("Truncated {}.{}".format(self.dm_table, self.target_table_emails))
         self.emails = db_source.select_to_dict(self.query_ads_users())
-        db_source.insert_copy(self.dm_table, self.target_table_emails, self.emails)
         self.logger.info("Information about emails table:")
         self.logger.info(str(self.emails))
+        db_source.insert_copy(self.dm_table, self.target_table_emails, self.emails)
+
+        self.emails['date'] = self.params.get_date_from()
+        db_source.insert_copy(self.dm_table, self.target_table_emails_historical, self.emails)
+        self.logger.info("Information about backup emails table inserted rows:")
+        self.logger.info(str(self.emails))
+
         # bump
         listid = self.emails["list_id"].tolist()
         chunks = 8 + int(len(listid)/10000)
