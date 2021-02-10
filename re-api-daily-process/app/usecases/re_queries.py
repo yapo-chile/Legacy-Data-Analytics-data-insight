@@ -100,6 +100,8 @@ class InmoAPI3(Query):
         del input_emails
 
         # Get emails and list_ids, write them to DW
+        db_source.execute_command('DELETE FROM {}.{};'.format(self.dm_table, self.target_table_emails))
+        self.logger.info("Truncated {}.{}".format(self.dm_table, self.target_table_emails))
         self.emails = db_source.select_to_dict(self.query_ads_users())
         db_source.insert_copy(self.dm_table, self.target_table_emails, self.emails)
         self.logger.info("Information about emails table:")
