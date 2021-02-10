@@ -20,13 +20,10 @@ class Query:
         st = "("
         for l in range(len(list_id)):
             if list_id[l] is not None and str(list_id[l]) != "None":
-                if l >= len(list_id) - 1:
-                    st += "'" + str(list_id[l]) + "'"
-                else:
-                    st += "'" + str(list_id[l]) + "',"
+                st += "'" + str(list_id[l]) + "',"
+        st = st[:len(st) - 2]
         st += ")"
-        st = st.replace(",)", ")")
-        list_id = st
+        list_id = st.replace(",)", ")")
         del st
 
         query = """
@@ -141,13 +138,10 @@ class Query:
         st = "("
         for l in range(len(list_id)):
             if list_id[l] is not None and str(list_id[l]) != "None":
-                if l >= len(list_id) - 1:
-                    st += str(list_id[l])
-                else:
-                    st += str(list_id[l]) + ","
+                st += "'" + str(list_id[l]) + "',"
+        st = st[:len(st) - 2]
         st += ")"
-        st = st.replace(",)", ")")
-        list_id = st
+        list_id = st.replace(",)", ")")
         del st
 
         query = """
