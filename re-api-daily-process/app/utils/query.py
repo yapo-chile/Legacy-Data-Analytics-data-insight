@@ -63,7 +63,7 @@ class Query:
                                 when bs.list_id is not null then 'bigseller'
                                 when spd.seller_id_fk is not null then 'pro'
                                 else 'pri'
-                            end as seller_type
+                            end as type
                         from
                             ods.active_ads aa
                         inner join
