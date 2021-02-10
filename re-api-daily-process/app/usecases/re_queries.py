@@ -93,6 +93,7 @@ class InmoAPI3(Query):
     def dwh_re_api_vanilla(self):
         db_source = Database(conf=self.config.db)
         db_athena = Athena(conf=self.config.athenaConf)
+
         # Update emails table in DW for the next query result to be updated as well
         db_source.execute_command('TRUNCATE TABLE {}.{};'.format(self.dm_table, self.target_table_emails_input))
         self.logger.info("Truncated {}.{}".format(self.dm_table, self.target_table_emails_input))
@@ -102,7 +103,7 @@ class InmoAPI3(Query):
         self.logger.info("Information about input emails table's duplicated values:")
         self.logger.info(str(input_emails[input_emails["email"].duplicated(keep="last")]))
         input_emails = input_emails.sort_values(by=['type'])
-        input_emails = input_emails.drop_duplicates(subset=['email'], keep='last')
+        input_emails = input_emails.drop_duplicates(subset=['email'], keep='first')
         self.logger.info("Information about input emails table without duplicates:")
         self.logger.info(str(input_emails))
         db_source.insert_copy(self.dm_table, self.target_table_emails_input, input_emails)
