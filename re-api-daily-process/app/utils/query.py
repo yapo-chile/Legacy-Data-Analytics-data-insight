@@ -78,7 +78,7 @@ class Query:
                             a.category_id_fk in (47,48)
                         )aa
                     where
-                        seller_type != 'pri'
+                        type != 'pri'
                     group by 1,2;
                 """
 
