@@ -25,6 +25,7 @@ class Query:
                 else:
                     st += "'" + str(list_id[l]) + "',"
         st += ")"
+        st = st.replace(",)", ")")
         list_id = st
         del st
 
@@ -145,6 +146,7 @@ class Query:
                 else:
                     st += str(list_id[l]) + ","
         st += ")"
+        st = st.replace(",)", ")")
         list_id = st
         del st
 
