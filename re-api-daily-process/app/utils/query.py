@@ -54,44 +54,34 @@ class Query:
         Method return str with query of emails per type of user
         """
         command = """
-                    SELECT
+                    select
                         email,
-                        type
-                        From(
-                        SELECT distinct
+                        seller_type
+                    from
+                        (
+                        select
                             s.email,
                             case
-                                when spd.seller_id_fk is null then 'PRI'
-                                else 'pro'
-                            end as type
+                                when bs.list_id is not null then 'bigseller'
+                                when spd.seller_id_fk is not null then 'pro'
+                                else 'pri'
+                            end as seller_type
                         from
                             ods.active_ads aa
                         inner join
                             ods.ad a using(ad_id_nk)
                         left join
                             ods.seller_pro_details spd using(seller_id_fk, category_id_fk)
-                        left join ods.seller s
-                            on a.seller_id_fk =s.seller_id_pk
-                        left join stg.big_sellers_detail bs 
-                        on (bs.ad_id_nk::int = a.ad_id_nk and bs.list_id is null)
-                        and
-                            a.category_id_fk in (47,48)
-                        and
-                            bs.list_id is null
-                        union all
-                        SELECT distinct
-                            s.email,
-                            'bigseller' as type
-                        from
-                            ods.active_ads aa
-                        inner join
-                            ods.ad a using(ad_id_nk)
-                        inner join
+                        left join
+                            ods.seller s on a.seller_id_fk = s.seller_id_pk
+                        left join
                             stg.big_sellers_detail bs on bs.ad_id_nk::int = a.ad_id_nk
-                        left join ods.seller s
-                            on a.seller_id_fk =s.seller_id_pk
                         where
-                            a.category_id_fk in (47,48))aa
+                            a.category_id_fk in (47,48)
+                        )aa
+                    where
+                        seller_type != 'pri'
+                    group by 1,2;
                 """
 
         return command
