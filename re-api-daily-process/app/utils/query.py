@@ -57,7 +57,7 @@ class Query:
         command = """
                     select
                         email,
-                        seller_type
+                        type
                     from
                         (
                         select
