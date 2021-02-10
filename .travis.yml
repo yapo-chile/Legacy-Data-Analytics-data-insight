@@ -12,6 +12,8 @@ if: tags IS blank
 # Anything in install that returns a nonzero exit code will
 # flunk the build and immediately stop. It's sorta like having
 # set -e enabled in bash.
+install:
+  - configure_docker
 
 before_script:
   - export BUILD_BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
