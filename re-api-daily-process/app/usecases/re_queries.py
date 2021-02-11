@@ -75,7 +75,13 @@ class InmoAPI3(Query):
         PARAMS["list_id"] = PARAMS["list_id"].apply(pd.to_numeric)
         # PARAMS['rooms'] = PARAMS['rooms'].where(pd.notnull(PARAMS['rooms']), None)
         # PARAMS['bathrooms'] = PARAMS['bathrooms'].where(pd.notnull(PARAMS['bathrooms']), None)
-        final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').drop_duplicates(keep='last').merge(PARAMS, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
+        final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
+        self.logger.info("CURRENT OUTPUT INTERMEDIATE ROWS:")
+        self.logger.info(str(final_df))
+        self.logger.info("CURRENT OUTPUT INTERMEDIATE ROW DUPLICATES:")  # bump
+        self.logger.info(str(final_df[final_df[['email', 'list_id']].duplicated(keep="first")]))
+
+        final_df = final_df.merge(PARAMS, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
         self.logger.info("CURRENT OUTPUT ROWS:")
         self.logger.info(str(final_df))
         self.logger.info("CURRENT OUTPUT ROW DUPLICATES:") #bump
@@ -195,7 +201,7 @@ class InmoAPI3(Query):
     def generate(self):
         # Basic sequential case
         self.dwh_re_api_vanilla()
-        self.logger('TOTAL INSERTED OUTPUT ROWS: ' + str(self.total_rows))
+        self.logger.info('TOTAL INSERTED OUTPUT ROWS: ' + str(self.total_rows))
         gc.collect()
         self.logger.info("Uncollectable memory garbage: {}. If empty, all memory of the current "
                          "run was succesfully freed. Be free, memory!".format(str(gc.garbage)))
