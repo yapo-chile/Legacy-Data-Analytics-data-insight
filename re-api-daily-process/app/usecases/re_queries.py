@@ -155,10 +155,11 @@ class InmoAPI3(Query):
             self.logger.info(perf)
             self.logger.info(ls)
             for i in range(len(ls)):
-                if int(ls[i]) not in perf:
-                    dummy = self.performance_dummy_dict
-                    dummy['list_id'] = ls[i]
-                    performance = performance.append(dummy, ignore_index=True)
+                if ls[i] is not None:
+                    if int(ls[i]) not in perf:
+                        dummy = self.performance_dummy_dict
+                        dummy['list_id'] = ls[i]
+                        performance = performance.append(dummy, ignore_index=True)
 
             performance = performance.dropna(subset=['list_id'])
             self.logger.info("PERFORMANCE DF:")
@@ -179,10 +180,11 @@ class InmoAPI3(Query):
             self.logger.info(params)
             self.logger.info(ls)
             for i in range(len(ls)):
-                if int(ls[i]) not in params:
-                    dummy = self.params_dummy_dict
-                    dummy['list_id'] = ls[i]
-                    ad_params = ad_params.append(dummy, ignore_index=True)
+                if ls[i] is not None:
+                    if int(ls[i]) not in params:
+                        dummy = self.params_dummy_dict
+                        dummy['list_id'] = ls[i]
+                        ad_params = ad_params.append(dummy, ignore_index=True)
 
             ad_params["link_type"].fillna("NULL", inplace=True)
             ad_params = ad_params.dropna(subset=['list_id'])
