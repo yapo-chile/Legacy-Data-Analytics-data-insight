@@ -142,39 +142,48 @@ class InmoAPI3(Query):
         del chunks
         for ls in listid:
             performance = db_athena.get_data(self.query_get_athena_performance(ls))
-            if performance.empty:
-                performance = self.performance_dummy
-                performance["list_id"] = ls[0]
-                for i in range(1, len(ls)):
+            #if performance.empty:
+            #    performance = self.performance_dummy
+            #    performance["list_id"] = ls[0]
+            #    for i in range(1, len(ls)):
+            #        dummy = self.performance_dummy_dict
+            #        dummy['list_id'] = ls[i]
+            #        performance = performance.append(dummy, ignore_index=True)
+            #else:
+            perf = performance['list_id'].tolist()
+            self.logger.info('List ids performance')
+            self.logger.info(perf)
+            self.logger.info(ls)
+            for i in range(len(ls)):
+                if ls[i] not in perf:
                     dummy = self.performance_dummy_dict
                     dummy['list_id'] = ls[i]
                     performance = performance.append(dummy, ignore_index=True)
-            else:
-                perf = performance['list_id'].tolist()
-                for i in range(len(ls)):
-                    if ls[i] not in perf:
-                        dummy = self.performance_dummy_dict
-                        dummy['list_id'] = ls[i]
-                        performance = performance.append(dummy, ignore_index=True)
+
             performance = performance.dropna(subset=['list_id'])
             self.logger.info("PERFORMANCE DF:")
             self.logger.info(performance)
             ad_params = db_source.select_to_dict(self.query_ads_params(ls))
             # ---- JOIN ALL ----
-            if ad_params.empty:
-                ad_params = self.params_dummy
-                ad_params["list_id"] = ls[0]
-                for i in range(1, len(ls)):
+            #if ad_params.empty:
+            #    ad_params = self.params_dummy
+            #    ad_params["list_id"] = ls[0]
+            #    for i in range(1, len(ls)):
+            #        dummy = self.params_dummy_dict
+            #        dummy['list_id'] = ls[i]
+            #        ad_params = ad_params.append(dummy, ignore_index=True)
+            #else:
+
+            params = ad_params['list_id'].tolist()
+            self.logger.info('List ids params')
+            self.logger.info(params)
+            self.logger.info(ls)
+            for i in range(len(ls)):
+                if ls[i] not in params:
                     dummy = self.params_dummy_dict
                     dummy['list_id'] = ls[i]
                     ad_params = ad_params.append(dummy, ignore_index=True)
-            else:
-                params = ad_params['list_id'].tolist()
-                for i in range(len(ls)):
-                    if ls[i] not in params:
-                        dummy = self.params_dummy_dict
-                        dummy['list_id'] = ls[i]
-                        ad_params = ad_params.append(dummy, ignore_index=True)
+
             ad_params["link_type"].fillna("NULL", inplace=True)
             ad_params = ad_params.dropna(subset=['list_id'])
             self.logger.info("PARAMS DF:")
