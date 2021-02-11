@@ -75,7 +75,7 @@ class InmoAPI3(Query):
         PARAMS["list_id"] = PARAMS["list_id"].apply(pd.to_numeric)
         # PARAMS['rooms'] = PARAMS['rooms'].where(pd.notnull(PARAMS['rooms']), None)
         # PARAMS['bathrooms'] = PARAMS['bathrooms'].where(pd.notnull(PARAMS['bathrooms']), None)
-        final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').merge(PARAMS, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
+        final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').drop_duplicates(keep='last').merge(PARAMS, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
         self.logger.info("CURRENT OUTPUT ROWS:")
         self.logger.info(str(final_df))
         self.logger.info("CURRENT OUTPUT ROW DUPLICATES:")
