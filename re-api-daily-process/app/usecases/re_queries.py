@@ -117,10 +117,12 @@ class InmoAPI3(Query):
         self.logger.info(str(self.emails))
         db_source.insert_copy(self.dm_table, self.target_table_emails, self.emails)
 
-        self.emails['date'] = self.params.get_date_from()
-        db_source.insert_copy(self.dm_table, self.target_table_emails_historical, self.emails)
+        emails = self.emails.copy()
+        emails['date'] = self.params.get_date_from()
+        db_source.insert_copy(self.dm_table, self.target_table_emails_historical, emails)
         self.logger.info("Information about backup emails table inserted rows:")
-        self.logger.info(str(self.emails))
+        self.logger.info(str(emails))
+        del emails
 
         # bump
         listid = self.emails["list_id"].tolist()
