@@ -155,7 +155,7 @@ class InmoAPI3(Query):
             self.logger.info(perf)
             self.logger.info(ls)
             for i in range(len(ls)):
-                if ls[i] not in perf:
+                if int(ls[i]) not in perf:
                     dummy = self.performance_dummy_dict
                     dummy['list_id'] = ls[i]
                     performance = performance.append(dummy, ignore_index=True)
@@ -179,7 +179,7 @@ class InmoAPI3(Query):
             self.logger.info(params)
             self.logger.info(ls)
             for i in range(len(ls)):
-                if ls[i] not in params:
+                if int(ls[i]) not in params:
                     dummy = self.params_dummy_dict
                     dummy['list_id'] = ls[i]
                     ad_params = ad_params.append(dummy, ignore_index=True)
