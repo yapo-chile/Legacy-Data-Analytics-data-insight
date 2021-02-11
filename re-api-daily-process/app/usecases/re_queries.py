@@ -77,6 +77,8 @@ class InmoAPI3(Query):
         final_df = EMAIL_LISTID.merge(PERFORMANCE, left_on='list_id', right_on='list_id').merge(PARAMS, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
         self.logger.info("CURRENT OUTPUT ROW:")
         self.logger.info(str(final_df))
+        self.logger.info("CURRENT OUTPUT ROW DUPLICATES:")
+        self.logger.info(str(final_df[final_df[['email', 'list_id']].duplicated(keep="first")]))
         return final_df
 
     def chunkIt(self, seq, num):
