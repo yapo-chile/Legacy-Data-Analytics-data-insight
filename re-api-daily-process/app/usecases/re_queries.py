@@ -181,7 +181,7 @@ class InmoAPI3(Query):
             self.logger.info(ls)
             for i in range(len(ls)):
                 if ls[i] is not None:
-                    if str(ls[i]) not in params:
+                    if (ls[i]) not in params:
                         dummy = self.params_dummy_dict
                         dummy['list_id'] = ls[i]
                         ad_params = ad_params.append(dummy, ignore_index=True)
