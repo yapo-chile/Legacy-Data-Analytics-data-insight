@@ -176,7 +176,7 @@ class InmoAPI3(Query):
             self.logger.info("CURRENT PERFORMANCE DUPLICATES:")
             self.logger.info(str(performance[performance['list_id'].duplicated(keep="first")]))
             self.logger.info("CURRENT AD PARAMS DUPLICATES:")
-            self.logger.info(str(ad_params[performance['list_id'].duplicated(keep="first")]))
+            self.logger.info(str(ad_params[ad_params['list_id'].duplicated(keep="first")]))
             self.dwh_re_api_vanilla = self.joined_params(self.emails, performance, ad_params)
             self.insert_to_dwh_vanilla(db_source)
             self.logger.info("Succesfully saved")
