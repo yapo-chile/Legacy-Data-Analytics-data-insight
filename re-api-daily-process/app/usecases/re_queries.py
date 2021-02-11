@@ -17,6 +17,7 @@ class InmoAPI3(Query):
         self.params = params
         self.logger = logger
         self.emails = ''
+        self.total_rows = 0
         self.dm_table = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
         self.target_table_emails = "inmo_pro_user_emails"
@@ -79,6 +80,7 @@ class InmoAPI3(Query):
         self.logger.info(str(final_df))
         self.logger.info("CURRENT OUTPUT ROW DUPLICATES:")
         self.logger.info(str(final_df[final_df[['email', 'list_id']].duplicated(keep="first")]))
+        self.total_rows += len(final_df)
         return final_df
 
     def chunkIt(self, seq, num):
@@ -193,6 +195,7 @@ class InmoAPI3(Query):
     def generate(self):
         # Basic sequential case
         self.dwh_re_api_vanilla()
+        self.logger('TOTAL INSERTED OUTPUT ROWS: ' + str(self.total_rows))
         gc.collect()
         self.logger.info("Uncollectable memory garbage: {}. If empty, all memory of the current "
                          "run was succesfully freed. Be free, memory!".format(str(gc.garbage)))
