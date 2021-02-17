@@ -18,6 +18,6 @@ if __name__ == '__main__':
     PARAMS = ReadParams(sys.argv)
     TIME.get_time()
     # Calling main process
-    Process(CONFIG, PARAMS).generate()
+    Process(CONFIG, PARAMS, LOGGER).generate()
     # End process
     LOGGER.info('Process ended successfully.')
