@@ -28,7 +28,7 @@ class RePyramidsYapo(RePyramidsYapoQuery):
         db_source.close_connection()
         self.__dwh_re_data_yapo_pyramid = dwh_re_data_yapo_pyramid
 
-    def inser_to_dwh(self):
+    def insert_to_dwh(self):
         cleaned_data=self.dwh_re_data_yapo_pyramid
         astypes= {'ad_id_nk':'Int64', 
                 'price':'Int64', 
