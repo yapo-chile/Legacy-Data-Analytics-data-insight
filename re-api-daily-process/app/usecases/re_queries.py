@@ -51,7 +51,8 @@ class InmoAPI3(Query):
                                "bathrooms": "Int64",
                                "currency": "str",
                                "price": "Int64",
-                               "link_type": "str"}
+                               "link_type": "str",
+                                "external_ad_id": "str"}
 
     def joined_params(self, EMAIL_LISTID, PERFORMANCE, PARAMS):
         """
@@ -82,6 +83,7 @@ class InmoAPI3(Query):
         self.logger.info(str(final_df[final_df[['email', 'list_id']].duplicated(keep="first")]))
 
         final_df = final_df.merge(PARAMS, left_on='list_id', right_on='list_id').drop_duplicates(keep='last')
+        final_df['external_ad_id'] = "NULL"
         self.logger.info("CURRENT OUTPUT ROWS:")
         self.logger.info(str(final_df))
         self.logger.info("CURRENT OUTPUT ROW DUPLICATES:") #bump
@@ -142,14 +144,7 @@ class InmoAPI3(Query):
         del chunks
         for ls in listid:
             performance = db_athena.get_data(self.query_get_athena_performance(ls))
-            #if performance.empty:
-            #    performance = self.performance_dummy
-            #    performance["list_id"] = ls[0]
-            #    for i in range(1, len(ls)):
-            #        dummy = self.performance_dummy_dict
-            #        dummy['list_id'] = ls[i]
-            #        performance = performance.append(dummy, ignore_index=True)
-            #else:
+
             perf = performance['list_id'].tolist()
             self.logger.info('List ids performance')
             self.logger.info(perf)
@@ -166,14 +161,6 @@ class InmoAPI3(Query):
             self.logger.info(performance)
             ad_params = db_source.select_to_dict(self.query_ads_params(ls))
             # ---- JOIN ALL ----
-            #if ad_params.empty:
-            #    ad_params = self.params_dummy
-            #    ad_params["list_id"] = ls[0]
-            #    for i in range(1, len(ls)):
-            #        dummy = self.params_dummy_dict
-            #        dummy['list_id'] = ls[i]
-            #        ad_params = ad_params.append(dummy, ignore_index=True)
-            #else:
 
             params = ad_params['list_id'].tolist()
             self.logger.info('List ids params')
