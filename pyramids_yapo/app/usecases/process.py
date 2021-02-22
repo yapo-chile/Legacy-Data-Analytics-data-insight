@@ -3,7 +3,7 @@
 import logging
 # from infraestructure.athena import Athena
 from infraestructure.psql import Database
-from utils.query import Query
+# from utils.query import Query
 from utils.read_params import ReadParams
 from .re_segment import RePyramidsYapo
 from .cars_segment import CarsPyramidsYapo
