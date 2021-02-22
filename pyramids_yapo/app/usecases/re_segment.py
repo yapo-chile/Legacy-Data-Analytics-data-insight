@@ -14,7 +14,7 @@ class RePyramidsYapo(RePyramidsYapoQuery):
                  logger) -> None:
         self.config = config
         self.params = params
-        self.logger= logger
+        self.logger = logger
 
     # Query data from data warehouse
     @property
@@ -30,16 +30,16 @@ class RePyramidsYapo(RePyramidsYapoQuery):
 
     def insert_to_dwh(self):
         cleaned_data=self.dwh_re_data_yapo_pyramid
-        astypes= {'ad_id_nk':'Int64', 
-                'price':'Int64', 
-                'uf_price':'Int64', 
-                'category_id_fk':'Int64',
-                'doc_num':'Int64'}
-        cleaned_data=cleaned_data.astype(astypes)
+        astypes = {"ad_id_nk":"Int64",
+                "price":"Int64",
+                "uf_price":"Int64",
+                "category_id_fk":"Int64",
+                "doc_num":"Int64"}
+        cleaned_data = cleaned_data.astype(astypes)
         dwh= Database(conf=self.config.db)
         self.logger.info("First record as evidence to dm_analysis")
         self.logger.info(cleaned_data.head())
-        dwh.insert_copy(cleaned_data,'dm_analysis','real_estate_pyramids_yapo')
+        dwh.insert_copy(cleaned_data,"dm_analysis","real_estate_pyramids_yapo")
 
     def generate(self):
         self.dwh_re_data_yapo_pyramid = self.config.db
