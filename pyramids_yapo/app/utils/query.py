@@ -1,16 +1,23 @@
-#from infraestructure.conf import getConf
-#from utils.read_params import ReadParams
+from infraestructure.conf import getConf
+from utils.read_params import ReadParams
 
 
 class RePyramidsYapoQuery:
     """
     Class that store all querys
     """
-    def re_segment_pyramid_yapo(self) ->str:
+
+    def __init__(self,
+                 conf: getConf,
+                 params: ReadParams) -> None:
+        self.params = params
+        self.conf = conf
+
+    def re_segment_pyramid_yapo(self) -> str:
         """
         Real estate Pyramid
         """
-        query="""
+        query = """
             select
             a.status_date,
             a.ad_id_nk,
@@ -101,15 +108,22 @@ class RePyramidsYapoQuery:
                     """
         return query
 
+
 class CarsPyramidsYapoQuery:
     """
     Query pyramids cars
     """
-    def cars_segment_pyramid_yapo(self) ->str:
+    def __init__(self,
+                 conf: getConf,
+                 params: ReadParams) -> None:
+        self.params = params
+        self.conf = conf
+
+    def cars_segment_pyramid_yapo(self) -> str:
         """
         Cars Pyramid Yapo
-        """    
-        query="""
+        """
+        query = """
             select
             a.status_date,
             a.ad_id_nk,

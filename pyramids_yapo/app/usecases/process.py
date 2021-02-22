@@ -1,6 +1,6 @@
 # pylint: disable=no-member
 # utf-8
-# import logging
+import logging
 # from infraestructure.athena import Athena
 # from infraestructure.psql import Database
 # from utils.query import Query
