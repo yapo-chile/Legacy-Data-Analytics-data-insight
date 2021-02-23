@@ -39,7 +39,7 @@ class RePyramidsYapo(RePyramidsYapoQuery):
         dwh= Database(conf=self.config.db)
         self.logger.info("First record as evidence to dm_analysis")
         self.logger.info(cleaned_data.head())
-        dwh.insert_copy(cleaned_data,self.dm_analysis,"real_estate_pyramids_yapo")
+        dwh.insert_copy(cleaned_data,"dm_analysis","real_estate_pyramids_yapo")
 
 
     def generate(self):
