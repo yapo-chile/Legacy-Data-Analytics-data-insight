@@ -9,7 +9,7 @@ from usecases.re_segment import RePyramidsYapo
 from usecases.cars_segment import CarsPyramidsYapo
 
 
-class Process(RePyramidsYapo):
+class Process():
     """
     class Process
     """
