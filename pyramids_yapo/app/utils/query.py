@@ -54,7 +54,7 @@ class RePyramidsYapoQuery:
                     aa.status_date,
                     a.ad_id_nk,
                     s.email,
-                    a.price,
+                    a.price::bigint,
                     case
                         when a.currency = 'peso' or a.currency is null then a.price / (select a.value from stg.currency a where date(date_time::date) = date(now()) and a.money = 'UF')
                         else a.price/100
@@ -72,7 +72,7 @@ class RePyramidsYapoQuery:
                         a.ad_id_pk,
                         a.ad_id_nk,
                         a.seller_id_fk,
-                        a.price,
+                        a.price::bigint,
                         ap.currency,
                         a.category_id_fk,
                         'real_estate'::text as pack_vertical
