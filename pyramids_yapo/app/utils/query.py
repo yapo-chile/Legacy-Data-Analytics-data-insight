@@ -4,7 +4,7 @@ from utils.read_params import ReadParams
 
 class RePyramidsYapoQuery:
     """
-    Class that store all querys
+    Class that store all query
     """
 
     def __init__(self,
