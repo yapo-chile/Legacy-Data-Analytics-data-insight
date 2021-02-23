@@ -56,8 +56,8 @@ class RePyramidsYapoQuery:
                     s.email,
                     a.price::bigint,
                     case
-                        when a.currency = 'peso' or a.currency is null then a.price / (select a.value from stg.currency a where date(date_time::date) = date(now()) and a.money = 'UF')
-                        else a.price/100
+                        when a.currency = 'peso' or a.currency is null then a.price::bigint / (select a.value::bigint from stg.currency a where date(date_time::date) = date(now()) and a.money = 'UF')
+                        else a.price::bigint/100
                     end as uf_price,
                     a.category_id_fk,
                     p.doc_num,
