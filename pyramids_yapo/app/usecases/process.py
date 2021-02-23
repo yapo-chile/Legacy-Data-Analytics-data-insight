@@ -1,16 +1,15 @@
 # pylint: disable=no-member
 # utf-8
 import logging
-# from infraestructure.athena import Athena
 from infraestructure.psql import Database
 from utils.query import RePyramidsYapoQuery
 from utils.query import CarsPyramidsYapoQuery
 from utils.read_params import ReadParams
-from .re_segment import RePyramidsYapo
-from .cars_segment import CarsPyramidsYapo
+from usecases.re_segment import RePyramidsYapo
+from usecases.cars_segment import CarsPyramidsYapo
 
 
-class Process():
+class Process:
     """
     class Process
     """
@@ -34,4 +33,3 @@ class Process():
         self.cars.pyramid_yapo= CarsPyramidsYapo(self.config,
                                 self.params,
                                 self.logger).generate()
-        
