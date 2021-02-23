@@ -37,7 +37,7 @@ class CarsPyramidsYapo(CarsPyramidsYapoQuery):
         dwh= Database(conf=self.config.db)
         self.logger.info("First record as evidence to dm_analysis")
         self.logger.info(cleaned_data.head())
-        dwh.insert_copy(cleaned_data,'dm_analysis','cars_pyramids_yapo')
+        dwh.insert_copy('dm_analysis','cars_pyramids_yapo',cleaned_data)
 
     def generate(self):
         self.dwh_cars_data_yapo_pyramid = self.config.db
