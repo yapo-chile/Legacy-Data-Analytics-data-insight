@@ -121,7 +121,7 @@ class CarsPyramidsYapoQuery:
 
     def cars_segment_pyramid_yapo(self) -> str:
         """
-        Cars Pyramid Yapo
+        Cars Pyramids Yapo
         """
         query = """
             select
