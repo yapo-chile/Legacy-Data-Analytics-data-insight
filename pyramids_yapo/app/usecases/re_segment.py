@@ -30,11 +30,11 @@ class RePyramidsYapo(RePyramidsYapoQuery):
 
     def insert_to_dwh(self):
         cleaned_data=self.dwh_re_data_yapo_pyramid
-        astypes = {"ad_id_nk":"int64",
-                "price":"int64",
-                "uf_price":"int64",
-                "category_id_fk":"int64",
-                "doc_num":"int64"}
+        astypes = {"ad_id_nk":"Int64",
+                "price":"Int64",
+                "uf_price":"Int64",
+                "category_id_fk":"Int64",
+                "doc_num":"Int64"}
         cleaned_data = cleaned_data.astype(astypes)
         dwh= Database(conf=self.config.db)
         self.logger.info("First record as evidence to dm_analysis")
