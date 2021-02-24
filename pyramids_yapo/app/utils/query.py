@@ -23,7 +23,7 @@ class RePyramidsYapoQuery:
             a.ad_id_nk,
             a.email,
             a.price::bigint,
-            a.uf_price::bigint,
+            a.uf_price,
             case
             when a.uf_price >= 1 AND a.uf_price < 3000 then '0-3000UF'
             when a.uf_price >= 3000 AND a.uf_price < 5000 then '3000-5000UF'
@@ -55,10 +55,10 @@ class RePyramidsYapoQuery:
                     a.ad_id_nk,
                     s.email,
                     a.price::bigint,
-                    case
-                        when a.currency = 'peso' or a.currency is null then a.price::bigint / (select a.value::bigint from stg.currency a where date(date_time::date) = date(now()) and a.money = 'UF')
-                        else a.price::bigint/100
-                    end as uf_price,
+                    (CASE
+                    WHEN a.currency= 'uf' then (cast(a.price as float)/100.0)
+                    when a.currency= 'peso' then (cast(a.price as float)/29164.0)--(select cu.value from stg.currency cu where date(date_time::date) = date(now()) and cu.money = 'UF')
+                    end) as uf_price,
                     a.category_id_fk,
                     p.doc_num,
                     p.pack_id,
