@@ -65,17 +65,18 @@ class AdViewsRE:
                 when ((device_type = 'mobile' or device_type = 'tablet') and object_url is not null and product_type = 'AndroidApp') or product_type = 'AndroidApp' then 'AndroidApp'
                 when ((device_type = 'mobile' or device_type = 'tablet') and object_url is not null and product_type = 'iOSApp') or product_type = 'iOSApp' or product_type = 'iPadApp' then 'iOSApp'
             end platform,
-            count(distinct row(ad_id, event_id)) ad_views
+            count(distinct row(ad_id, event_id)) AS ad_views
         from
             yapocl_databox.insights_events_behavioral_fact_layer_365d
         where
             CAST(date_parse(CAST(year AS varchar) || '-' || CAST(month AS varchar) || '-' || CAST(day AS varchar),'%Y-%c-%e') AS date)
-        BETWEEN DATE('{}') AND DATE('{}')
+                = CURRENT_DATE
             and event_name = 'Ad detail viewed'
             and (local_category_level1 in ('arrendar','arriendo','comprar') and local_main_category in ('inmuebles'))
         group by 1,2,3
         """
         return query
+
 
 class UniqueLeadsWithOutShowPhoneRE:
 
@@ -106,11 +107,179 @@ class UniqueLeadsWithOutShowPhoneRE:
             yapocl_databox.insights_events_behavioral_fact_layer_365d
         WHERE
             CAST(date_parse(CAST(year AS varchar) || '-' || CAST(month AS varchar) || '-' || CAST(day AS varchar),'%Y-%c-%e') AS date)
-                BETWEEN DATE('{}') AND DATE('{}')
+                = CURRENT_DATE
             AND ad_id != 'sdrn:yapocl:classified:' AND ad_id != 'sdrn:yapocl:classified:0'
             AND event_type IN ('Call','SMS','Send')
             AND (local_category_level1 IN ('arrendar','arriendo','comprar') AND local_main_category IN ('inmuebles'))
             AND lead_id != 'unknown'
         GROUP BY  1,2,3
+        """
+        return query
+
+class SegmentedAdsRE:
+
+    def __init__(self, conf: getConf, params: ReadParams) -> None:
+        self.params = params
+        self.conf = conf
+
+    def segmented_ads(self) -> str:
+
+        query = """
+        SELECT
+            list_id,
+            category,
+            region,
+            comuna,
+            case
+                WHEN category = 'Arrendar' THEN 'Arriendo'
+                when uf_price >= 0 AND uf_price < 3000 THEN '0-3000UF'
+                when uf_price >= 3000 AND uf_price < 5000 THEN '3000-5000UF'
+                when uf_price >= 5000 AND uf_price < 7000 THEN '5000-7000UF'
+                when uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
+                when uf_price >= 9000 THEN '9000UF+'
+            END AS price_interval,
+            estate_type
+        FROM
+            (
+            SELECT
+                CASE
+                    WHEN a.action_type = 'import' THEN bsd.list_id
+                    ELSE a.list_id_nk
+                END AS list_id,
+                c.category_name AS category,
+                r.region_name AS region,
+                -- Price in UF
+                CASE 
+                    WHEN ip.currency = 'uf' THEN (CAST(a.price AS float)/100.0) 
+                    ELSE CAST(a.price AS float) / 
+                        (SELECT a.value FROM stg.currency a WHERE date_time::date = CURRENT_DATE AND a.money = 'UF')
+                END AS uf_price,
+                co.comuna_name AS comuna,
+                ip.currency,
+                --ip.bathrooms, ip.rooms, ip.meters, 
+                CASE
+                    WHEN ip.estate_type = '1' THEN 'Departamento'
+                    WHEN ip.estate_type = '2' THEN 'Casa'
+                    WHEN ip.estate_type = '3' THEN 'Oficina'
+                    WHEN ip.estate_type = '4' THEN 'Comercial e industrial'
+                    WHEN ip.estate_type = '5' THEN 'Terreno'
+                    WHEN ip.estate_type = '6' THEN 'Estacionamiento, bodega u otro'
+                    WHEN ip.estate_type = '7' THEN 'Pieza'
+                    WHEN ip.estate_type = '8' THEN 'Cabaña'
+                    WHEN ip.estate_type = '9' THEN 'Habitacion'
+                END AS estate_type
+            FROM
+                ods.ad AS a
+                LEFT JOIN
+                    ods.category AS c
+                    ON a.category_id_fk = c.category_id_pk
+                LEFT JOIN 
+                    ods.region AS r
+                    ON a.region_id_fk = r.region_id_pk
+                LEFT JOIN
+                    stg.dim_communes_blocket AS co
+                    ON a.communes_id_nk::int = co.comuna_id::int
+                INNER JOIN
+                    ods.ads_inmo_params AS ip 
+                    ON a.ad_id_nk = ip.ad_id_nk
+                LEFT JOIN 
+                    stg.big_sellers_detail AS bsd
+                    ON a.ad_id_nk = bsd.ad_id_nk
+            WHERE
+                a.category_id_fk IN (47,48)
+            ) AS tmp
+        """
+        return query
+
+
+class NaaSegmentedRE:
+
+    def __init__(self, conf: getConf, params: ReadParams) -> None:
+        self.params = params
+        self.conf = conf
+
+    def naa_segmented(self) -> str:
+
+        query = """
+        SELECT
+            "date",
+            price_interval,
+            platform,
+            pri_pro,
+            COUNT(*) AS naa
+        FROM
+            (
+            SELECT
+                "date",
+                CASE
+                    WHEN category_id_fk = 48 THEN 'Arriendo'
+                    when uf_price >= 0 AND uf_price < 3000 THEN '0-3000UF'
+                    when uf_price >= 3000 AND uf_price < 5000 THEN '3000-5000UF'
+                    when uf_price >= 5000 AND uf_price < 7000 THEN '5000-7000UF'
+                    when uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
+                    when uf_price >= 9000 THEN '9000UF+'
+                END AS price_interval,
+                pri_pro, 
+                platform
+            FROM
+                (
+                SELECT
+                    a.category_id_fk,
+                    CASE
+                        WHEN a.action_type = 'import' THEN bsd.list_time
+                        ELSE a.approval_date::date
+                    END AS "date",
+                    -- Price in UF
+                    CASE 
+                        WHEN ip.currency = 'uf' THEN (a.price::float/100.0) 
+                        ELSE a.price::float / (SELECT a.value FROM stg.currency a WHERE date_time::date = CURRENT_DATE AND a.money = 'UF')
+                    END AS uf_price,
+                    CASE 
+                        WHEN bsd.ad_id_nk IS NOT NULL THEN 'Web'
+                        when p.platform_name = 'Unknown' then 'Web'
+                        when p.platform_name = 'M Site' then 'MSite'
+                        when p.platform_name = 'NGA Android' then 'AndroidApp'
+                        when p.platform_name = 'NGA Ios' then 'iOSApp'
+                        ELSE p.platform_name 
+                    END AS platform,
+                    -- Aviso Pri/Pro
+                    CASE
+                        WHEN bsd.ad_id_nk IS NOT NULL THEN 'Pro'
+                        WHEN spd.seller_id_fk IS NULL THEN 'Pri'
+                        ELSE 'Pro'
+                    END AS pri_pro
+                FROM
+                    ods.ad AS a
+                    LEFT JOIN
+                        ods.ads_inmo_params AS ip 
+                        ON a.ad_id_nk = ip.ad_id_nk
+                    LEFT JOIN
+                        -- Pri/Pro
+                        ods.seller_pro_details AS spd
+                        ON a.seller_id_fk = spd.seller_id_fk
+                            AND a.category_id_fk = spd.category_id_fk
+                    LEFT JOIN 
+                        -- Carga Masiva
+                        stg.big_sellers_detail AS bsd
+                        ON a.ad_id_nk = bsd.ad_id_nk
+                    LEFT JOIN 
+                        ods.platform AS p 
+                        ON a.platform_id_fk = p.platform_id_pk
+                    /*
+                    LEFT JOIN 
+                        ods.region AS r
+                        ON a.region_id_fk = r.region_id_pk
+                    */
+                WHERE
+                    a.category_id_fk IN (47,48)
+                ) AS tmp1
+            WHERE
+                "date" = CURRENT_DATE
+            ) AS tmp2
+        GROUP BY
+            1,2,3,4
+        ORDER BY
+    1,2,3,4
+
         """
         return query
