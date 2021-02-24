@@ -22,8 +22,8 @@ class RePyramidsYapoQuery:
             a.status_date,
             a.ad_id_nk,
             a.email,
-            a.price::bigint,
-            a.uf_price as int,
+            a.price,
+            a.uf_price,
             case
             when a.uf_price >= 1 AND a.uf_price < 3000 then '0-3000UF'
             when a.uf_price >= 3000 AND a.uf_price < 5000 then '3000-5000UF'
