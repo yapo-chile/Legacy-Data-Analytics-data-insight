@@ -49,7 +49,9 @@ class Query:
 
 class AdViewsRE:
 
-    def __init__(self, conf: getConf, params: ReadParams) -> None:
+    def __init__(self,
+                 conf: getConf,
+                 params: ReadParams) -> None:
         self.params = params
         self.conf = conf
 
@@ -80,7 +82,9 @@ class AdViewsRE:
 
 class UniqueLeadsWithOutShowPhoneRE:
 
-    def __init__(self, conf: getConf, params: ReadParams) -> None:
+    def __init__(self,
+                 conf: getConf,
+                 params: ReadParams) -> None:
         self.params = params
         self.conf = conf
 
@@ -116,9 +120,12 @@ class UniqueLeadsWithOutShowPhoneRE:
         """
         return query
 
+
 class SegmentedAdsRE:
 
-    def __init__(self, conf: getConf, params: ReadParams) -> None:
+    def __init__(self,
+                 conf: getConf,
+                 params: ReadParams) -> None:
         self.params = params
         self.conf = conf
 
@@ -126,6 +133,7 @@ class SegmentedAdsRE:
 
         query = """
         SELECT
+            "date",
             list_id,
             category,
             region,
@@ -138,10 +146,16 @@ class SegmentedAdsRE:
                 when uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
                 when uf_price >= 9000 THEN '9000UF+'
             END AS price_interval,
-            estate_type
+            estate_type,
+            platform,
+            pri_pro
         FROM
             (
             SELECT
+               CASE
+                    WHEN a.action_type = 'import' THEN bsd.list_time
+                    ELSE a.approval_date::date
+                END AS "date",
                 CASE
                     WHEN a.action_type = 'import' THEN bsd.list_id
                     ELSE a.list_id_nk
@@ -167,7 +181,21 @@ class SegmentedAdsRE:
                     WHEN ip.estate_type = '7' THEN 'Pieza'
                     WHEN ip.estate_type = '8' THEN 'Cabaña'
                     WHEN ip.estate_type = '9' THEN 'Habitacion'
-                END AS estate_type
+                END AS estate_type,
+                CASE 
+                    WHEN bsd.ad_id_nk IS NOT NULL THEN 'Web'
+                    when p.platform_name = 'Unknown' then 'Web'
+                    when p.platform_name = 'M Site' then 'MSite'
+                    when p.platform_name = 'NGA Android' then 'AndroidApp'
+                    when p.platform_name = 'NGA Ios' then 'iOSApp'
+                    ELSE p.platform_name 
+                END AS platform,
+                -- Aviso Pri/Pro
+                CASE
+                    WHEN bsd.ad_id_nk IS NOT NULL THEN 'Pro'
+                    WHEN spd.seller_id_fk IS NULL THEN 'Pri'
+                    ELSE 'Pro'
+                END AS pri_pro
             FROM
                 ods.ad AS a
                 LEFT JOIN
@@ -185,101 +213,15 @@ class SegmentedAdsRE:
                 LEFT JOIN 
                     stg.big_sellers_detail AS bsd
                     ON a.ad_id_nk = bsd.ad_id_nk
+                LEFT JOIN 
+                    ods.platform AS p 
+                    ON a.platform_id_fk = p.platform_id_pk
+                 LEFT JOIN
+                    ods.seller_pro_details AS spd
+                        ON a.seller_id_fk = spd.seller_id_fk
+                            AND a.category_id_fk = spd.category_id_fk
             WHERE
                 a.category_id_fk IN (47,48)
             ) AS tmp
-        """
-        return query
-
-
-class NaaSegmentedRE:
-
-    def __init__(self, conf: getConf, params: ReadParams) -> None:
-        self.params = params
-        self.conf = conf
-
-    def naa_segmented(self) -> str:
-
-        query = """
-        SELECT
-            "date",
-            price_interval,
-            platform,
-            pri_pro,
-            COUNT(*) AS naa
-        FROM
-            (
-            SELECT
-                "date",
-                CASE
-                    WHEN category_id_fk = 48 THEN 'Arriendo'
-                    when uf_price >= 0 AND uf_price < 3000 THEN '0-3000UF'
-                    when uf_price >= 3000 AND uf_price < 5000 THEN '3000-5000UF'
-                    when uf_price >= 5000 AND uf_price < 7000 THEN '5000-7000UF'
-                    when uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
-                    when uf_price >= 9000 THEN '9000UF+'
-                END AS price_interval,
-                pri_pro, 
-                platform
-            FROM
-                (
-                SELECT
-                    a.category_id_fk,
-                    CASE
-                        WHEN a.action_type = 'import' THEN bsd.list_time
-                        ELSE a.approval_date::date
-                    END AS "date",
-                    -- Price in UF
-                    CASE 
-                        WHEN ip.currency = 'uf' THEN (a.price::float/100.0) 
-                        ELSE a.price::float / (SELECT a.value FROM stg.currency a WHERE date_time::date = CURRENT_DATE AND a.money = 'UF')
-                    END AS uf_price,
-                    CASE 
-                        WHEN bsd.ad_id_nk IS NOT NULL THEN 'Web'
-                        when p.platform_name = 'Unknown' then 'Web'
-                        when p.platform_name = 'M Site' then 'MSite'
-                        when p.platform_name = 'NGA Android' then 'AndroidApp'
-                        when p.platform_name = 'NGA Ios' then 'iOSApp'
-                        ELSE p.platform_name 
-                    END AS platform,
-                    -- Aviso Pri/Pro
-                    CASE
-                        WHEN bsd.ad_id_nk IS NOT NULL THEN 'Pro'
-                        WHEN spd.seller_id_fk IS NULL THEN 'Pri'
-                        ELSE 'Pro'
-                    END AS pri_pro
-                FROM
-                    ods.ad AS a
-                    LEFT JOIN
-                        ods.ads_inmo_params AS ip 
-                        ON a.ad_id_nk = ip.ad_id_nk
-                    LEFT JOIN
-                        -- Pri/Pro
-                        ods.seller_pro_details AS spd
-                        ON a.seller_id_fk = spd.seller_id_fk
-                            AND a.category_id_fk = spd.category_id_fk
-                    LEFT JOIN 
-                        -- Carga Masiva
-                        stg.big_sellers_detail AS bsd
-                        ON a.ad_id_nk = bsd.ad_id_nk
-                    LEFT JOIN 
-                        ods.platform AS p 
-                        ON a.platform_id_fk = p.platform_id_pk
-                    /*
-                    LEFT JOIN 
-                        ods.region AS r
-                        ON a.region_id_fk = r.region_id_pk
-                    */
-                WHERE
-                    a.category_id_fk IN (47,48)
-                ) AS tmp1
-            WHERE
-                "date" = CURRENT_DATE
-            ) AS tmp2
-        GROUP BY
-            1,2,3,4
-        ORDER BY
-    1,2,3,4
-
         """
         return query
