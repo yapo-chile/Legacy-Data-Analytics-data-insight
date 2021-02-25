@@ -55,11 +55,11 @@ class RePyramidsYapoQuery:
                     a.ad_id_nk,
                     s.email,
                     a.price::bigint,
-                    cast(round(CASE 
-                    WHEN a.currency = 'uf' THEN (CAST(a.price AS float)/100.0) 
-                    ELSE CAST(a.price AS float) / 
+                    CASE 
+                    WHEN a.currency = 'uf' THEN (CAST(round(a.price) AS bigint)/100) 
+                    ELSE CAST(round(a.price) AS bigint) / 
                         (SELECT a.value FROM stg.currency a WHERE date_time::date = CURRENT_DATE AND a.money = 'UF')
-                    END) as int) as uf_price,
+                    END as uf_price,
                     a.category_id_fk,
                     p.doc_num,
                     p.pack_id,
