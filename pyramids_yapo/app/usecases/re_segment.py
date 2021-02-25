@@ -29,20 +29,20 @@ class RePyramidsYapo(RePyramidsYapoQuery):
         self.__dwh_re_data_yapo_pyramid = dwh_re_data_yapo_pyramid
 
     def insert_to_dwh(self):
-        #cleaned_data=self.dwh_re_data_yapo_pyramid
-        #astypes = {"ad_id_nk":"Int64",
-        #        "price":"Int64",
-        #        "uf_price":"Int64",
-        #        "category_id_fk":"Int64",
-        #        "doc_num":"Int64"}
-        #cleaned_data = cleaned_data.astype(astypes)
+        cleaned_data=self.dwh_re_data_yapo_pyramid
+        astypes = {"ad_id_nk":"Int64",
+                "price":"Int64",
+                "uf_price":"Int64",
+                "category_id_fk":"Int64",
+                "doc_num":"Int64"}
+        cleaned_data = cleaned_data.astype(astypes)
         dwh= Database(conf=self.config.db)
         self.logger.info("First record as evidence to dm_analysis")
-        #self.logger.info(cleaned_data.head())
+        self.logger.info(cleaned_data.head())
         self.logger.info(self.dwh_re_data_yapo_pyramid.head())
         self.logger.info(self.dwh_re_data_yapo_pyramid["uf_price"].head())
-        #dwh.insert_copy("dm_analysis", "real_estate_pyramids_yapo", cleaned_data)
-        dwh.insert_copy("dm_analysis", "real_estate_pyramids_yapo", self.dwh_re_data_yapo_pyramid)
+        dwh.insert_copy("dm_analysis", "real_estate_pyramids_yapo", cleaned_data)
+        #dwh.insert_copy("dm_analysis", "real_estate_pyramids_yapo", self.dwh_re_data_yapo_pyramid)
 
 
 
