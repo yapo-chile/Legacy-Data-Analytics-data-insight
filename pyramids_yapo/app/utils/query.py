@@ -25,7 +25,7 @@ class RePyramidsYapoQuery:
             a.price::bigint,
             a.uf_price::int,
             case
-            when a.uf_price >= 1 AND a.uf_price < 3000 then '0-3000UF'
+            when a.uf_price >= 0 AND a.uf_price < 3000 then '0-3000UF'
             when a.uf_price >= 3000 AND a.uf_price < 5000 then '3000-5000UF'
             when a.uf_price >= 5000 AND a.uf_price < 7000 then '5000-7000UF'
             when a.uf_price >= 7000 AND a.uf_price < 9000 then '7000-9000UF'
