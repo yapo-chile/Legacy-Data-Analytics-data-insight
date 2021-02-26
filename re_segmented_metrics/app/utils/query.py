@@ -47,7 +47,7 @@ class Query:
         return command
 
 
-class AdViewsRE:
+class AdViewsREQuery:
 
     def __init__(self,
                  conf: getConf,
@@ -55,7 +55,7 @@ class AdViewsRE:
         self.params = params
         self.conf = conf
 
-    def ad_views(self) -> str:
+    def get_ad_views(self) -> str:
 
         query = """
         select
@@ -80,7 +80,7 @@ class AdViewsRE:
         return query
 
 
-class UniqueLeadsWithOutShowPhoneRE:
+class UniqueLeadsWithOutShowPhoneREQuery:
 
     def __init__(self,
                  conf: getConf,
@@ -88,7 +88,7 @@ class UniqueLeadsWithOutShowPhoneRE:
         self.params = params
         self.conf = conf
 
-    def unique_leads(self) -> str:
+    def get_unique_leads(self) -> str:
 
         query = """
         SELECT
@@ -121,7 +121,7 @@ class UniqueLeadsWithOutShowPhoneRE:
         return query
 
 
-class SegmentedAdsRE:
+class SegmentedAdsREQuery:
 
     def __init__(self,
                  conf: getConf,
@@ -129,7 +129,7 @@ class SegmentedAdsRE:
         self.params = params
         self.conf = conf
 
-    def segmented_ads(self) -> str:
+    def get_segmented_ads(self) -> str:
 
         query = """
         SELECT
@@ -148,7 +148,9 @@ class SegmentedAdsRE:
             END AS price_interval,
             estate_type,
             platform,
-            pri_pro
+            pri_pro,
+            deletion_date,
+            reason_removed_detail_id_fk
         FROM
             (
             SELECT
@@ -195,7 +197,9 @@ class SegmentedAdsRE:
                     WHEN bsd.ad_id_nk IS NOT NULL THEN 'Pro'
                     WHEN spd.seller_id_fk IS NULL THEN 'Pri'
                     ELSE 'Pro'
-                END AS pri_pro
+                END AS pri_pro,
+                a.deletion_date::date AS deletion_date,
+                a.reason_removed_detail_id_fk
             FROM
                 ods.ad AS a
                 LEFT JOIN
