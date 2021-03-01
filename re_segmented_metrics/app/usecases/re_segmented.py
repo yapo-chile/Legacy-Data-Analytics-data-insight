@@ -1,6 +1,8 @@
 # pylint: disable=no-member
 # utf-8
 import logging
+import pandas as pd
+from datetime import date, timedelta
 from infraestructure.athena import Athena
 from infraestructure.psql import Database
 from utils.query import RESegmentedQuery
@@ -76,9 +78,51 @@ class RESegmentedQuery(RESegmentedQuery):
         db.insert_data(self.data_dwh)
         db.close_connection()
 
-
+    def insert_to_stg(self):
+        cleaned_data = self.blocket_data_reply
+        astypes = {"mail_queue_id": "Int64",
+                   "list_id": "Int64",
+                   "rule_id": "Int64",
+                   "ad_id": "Int64"}
+        cleaned_data = cleaned_data.astype(astypes)
+        dwh = Database(conf=self.config.db)
+        self.logger.info("First records as evidence to STG")
+        self.logger.info(cleaned_data.head())
+        dwh.execute_command(self.clean_stg_ad_reply())
+        dwh.insert_copy(cleaned_data, "stg", "ad_reply")
 
     def generate(self):
-        self.data_dwh = self.config.db
-        self.data_athena = self.config.athenaConf
-        self.save()
+        self.data_segmented_ads = self.config.db
+        self.data_uleads_wo_showphone = self.config.athenaConf
+        self.data_ad_views = self.config.athenaConf
+        update_date = date.today() - timedelta(1)
+
+        # NAA
+        naa_data = self.data_segmented_ads[self.data_segmented_ads['date'] == update_date]\
+            .groupby(['date', 'price_interval', 'platform', 'pri_pro'])\
+            .agg({'list_id': 'count'})\
+            .reset_index(drop=False)\
+            .rename(columns={'list_id': 'naa'})
+
+        # Deleted ads and SOS
+        sos_data = self.data_segmented_ads[self.data_segmented_ads['deletion_date'] == update_date]\
+            .groupby(['date', 'price_interval', 'platform', 'pri_pro', 'sold_on_site'])\
+            .agg({'list_id': 'count'})\
+            .reset_index(drop=False)\
+            .rename(columns={'list_id': 'deleted_ads'})
+
+        # Unique Leads
+        uleads_merge = pd.merge(left=self.data_uleads_wo_showphone,
+                                right=self.data_segmented_ads[['list_id', 'category', 'region', 'commune',
+                                                               'price_interval', 'estate_type']],
+                                how="inner",
+                                on='list_id')
+
+        # Ad Views
+        views_merge = pd.merge(left=self.data_ad_views,
+                               right=self.data_segmented_ads[['list_id', 'category', 'region', 'commune',
+                                                              'price_interval', 'estate_type']],
+                               how="inner",
+                               on='list_id')
+
+        #self.save()
