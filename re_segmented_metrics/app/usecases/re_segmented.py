@@ -47,7 +47,8 @@ class RESegmentedQuery(RESegmentedQuery):
             .dropna(subset=['list_id'])\
             .query("list_id!= 'https'")\
             .reset_index(drop=True) \
-            .astype({'list_id': 'int'})
+            .astype({'list_id': 'int64',
+                     'ad_views': 'int64'})
         athena.close_connection()
         self.__data_ad_views = data_ad_views_clean
 
@@ -64,10 +65,10 @@ class RESegmentedQuery(RESegmentedQuery):
             .dropna(subset=['list_id'])\
             .query("list_id!= 'https'")\
             .reset_index(drop=True) \
-            .astype({'list_id': 'int'})
+            .astype({'list_id': 'int64',
+                     'unique_leads': 'int64'})
         athena.close_connection()
         self.__data_uleads_wo_showphone = data_uleads_clean
-
 
     # Write data to data warehouse
     def save(self) -> None:
@@ -78,18 +79,21 @@ class RESegmentedQuery(RESegmentedQuery):
         db.insert_data(self.data_dwh)
         db.close_connection()
 
-    def insert_to_stg(self):
-        cleaned_data = self.blocket_data_reply
-        astypes = {"mail_queue_id": "Int64",
-                   "list_id": "Int64",
-                   "rule_id": "Int64",
-                   "ad_id": "Int64"}
-        cleaned_data = cleaned_data.astype(astypes)
+    def insert_naa(self):
         dwh = Database(conf=self.config.db)
-        self.logger.info("First records as evidence to STG")
-        self.logger.info(cleaned_data.head())
-        dwh.execute_command(self.clean_stg_ad_reply())
-        dwh.insert_copy(cleaned_data, "stg", "ad_reply")
+        dwh.insert_copy(self.naa_data, "dm_analysis", "segmented_re_naa")
+
+    def insert_deleted_ads(self):
+        dwh = Database(conf=self.config.db)
+        dwh.insert_copy(self.deleted_ads_data, "dm_analysis", "segmented_re_deleted_ads")
+
+    def insert_uleads_wo_showphone(self):
+        dwh = Database(conf=self.config.db)
+        dwh.insert_copy(self.uleads_data, "dm_analysis", "segmented_re_unique_leads_wo_showphone")
+
+    def insert_ad_views(self):
+        dwh = Database(conf=self.config.db)
+        dwh.insert_copy(self.ad_views_data, "dm_analysis", "segmented_re_ad_views")
 
     def generate(self):
         self.data_segmented_ads = self.config.db
@@ -103,13 +107,17 @@ class RESegmentedQuery(RESegmentedQuery):
             .agg({'list_id': 'count'})\
             .reset_index(drop=False)\
             .rename(columns={'list_id': 'naa'})
+        self.naa_data = naa_data
+        self.insert_naa()
 
         # Deleted ads and SOS
-        sos_data = self.data_segmented_ads[self.data_segmented_ads['deletion_date'] == update_date]\
+        deleted_ads_data = self.data_segmented_ads[self.data_segmented_ads['deletion_date'] == update_date]\
             .groupby(['date', 'price_interval', 'platform', 'pri_pro', 'sold_on_site'])\
             .agg({'list_id': 'count'})\
             .reset_index(drop=False)\
             .rename(columns={'list_id': 'deleted_ads'})
+        self.deleted_ads_data = deleted_ads_data
+        self.insert_deleted_ads()
 
         # Unique Leads
         uleads_merge = pd.merge(left=self.data_uleads_wo_showphone,
@@ -117,12 +125,16 @@ class RESegmentedQuery(RESegmentedQuery):
                                                                'price_interval', 'estate_type']],
                                 how="inner",
                                 on='list_id')
+        self.uleads_data = uleads_merge
+        self.insert_uleads_wo_showphone()
 
         # Ad Views
-        views_merge = pd.merge(left=self.data_ad_views,
+        ad_views_merge = pd.merge(left=self.data_ad_views,
                                right=self.data_segmented_ads[['list_id', 'category', 'region', 'commune',
                                                               'price_interval', 'estate_type']],
                                how="inner",
                                on='list_id')
+        self.ad_views_data = ad_views_merge
+        self.insert_ad_views()
 
-        #self.save()
+        return True
