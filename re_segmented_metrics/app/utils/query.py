@@ -74,7 +74,7 @@ class RESegmentedQuery:
             list_id,
             category,
             region,
-            comuna,
+            commune,
             case
                 WHEN category = 'Arrendar' THEN 'Arriendo'
                 when uf_price >= 0 AND uf_price < 3000 THEN '0-3000UF'
@@ -107,7 +107,7 @@ class RESegmentedQuery:
                     ELSE CAST(a.price AS float) / 
                         (SELECT a.value FROM stg.currency a WHERE date_time::date = CURRENT_DATE AND a.money = 'UF')
                 END AS uf_price,
-                co.comuna_name AS comuna,
+                co.comuna_name AS commune,
                 ip.currency,
                 --ip.bathrooms, ip.rooms, ip.meters, 
                 CASE
