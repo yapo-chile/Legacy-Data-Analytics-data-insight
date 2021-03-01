@@ -26,10 +26,10 @@ class Process():
         """
         generate
         """
-        self.re.pyramid_yapo=RePyramidsYapo(self.config,
+        self.re_pyramid_yapo=RePyramidsYapo(self.config,
                                         self.params,
                                         self.logger).generate()
 
-        self.cars.pyramid_yapo= CarsPyramidsYapo(self.config,
+        self.cars_pyramid_yapo= CarsPyramidsYapo(self.config,
                                 self.params,
                                 self.logger).generate()
