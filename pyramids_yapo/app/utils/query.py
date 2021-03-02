@@ -19,46 +19,46 @@ class RePyramidsYapoQuery:
         """
         query = """
             select
-            a.status_date,
-            a.ad_id_nk,
-            a.email,
-            a.price::bigint,
-            a.uf_price::int,
-            case
-            when a.uf_price >= 0 AND a.uf_price < 3000 then '0-3000UF'
-            when a.uf_price >= 3000 AND a.uf_price < 5000 then '3000-5000UF'
-            when a.uf_price >= 5000 AND a.uf_price < 7000 then '5000-7000UF'
-            when a.uf_price >= 7000 AND a.uf_price < 9000 then '7000-9000UF'
-            when a.uf_price >= 9000 then '9000UF+'
-            else null
-            end as price_interval,
-            a.category_id_fk,
-            a.doc_num,
-            a.integrador,
-            /*case
-                when a.integrador is not null and a.automotora is null then 'UNKNOWN'
-                else a.automotora
-            end as automotora,*/
-            case
-                when a.integrador is not null then 'Integrador'
-                when a.pack_id is not null then 'Pack'
-                when a.insfee_buyer = 'if_buyer' then 'Insertion Fee'
-                else null
-            end as ad_type,
-            case
+                a.status_date,
+                a.ad_id_nk,
+                a.email,
+                a.price,
+                a.uf_price,
+                case
+                    when a.uf_price >= 1 AND a.uf_price < 3000 then '0-3000UF'
+                    when a.uf_price >= 3000 AND a.uf_price < 5000 then '3000-5000UF'
+                    when a.uf_price >= 5000 AND a.uf_price < 7000 then '5000-7000UF'
+                    when a.uf_price >= 7000 AND a.uf_price < 9000 then '7000-9000UF'
+                    when a.uf_price >= 9000 then '9000UF+'
+                    else null
+                end as price_interval,
+                a.category_id_fk,
+                a.doc_num,
+                a.integrador,
+                /*case
+                    when a.integrador is not null and a.automotora is null then 'UNKNOWN'
+                    else a.automotora
+                end as automotora,*/
+                case
+                    when a.integrador is not null then 'Integrador'
+                    when a.pack_id is not null then 'Pack'
+                    when a.insfee_buyer = 'if_buyer' then 'Insertion Fee'
+                    else null
+                end as ad_type,
+                case
                 when split_part(split_part(a.email,'@',2),'.',1) in ('gmail','hotmail','icloud','live','outlook','yahoo') then 'Publico'
                 else 'Privado'
-            end as email_provider
+                end as email_provider
             from(
                 select
                     aa.status_date,
                     a.ad_id_nk,
                     s.email,
-                    a.price::bigint,
-                    cast((CASE
-                    WHEN a.currency= 'uf' then (cast(a.price as float)/100.0)
-                    when a.currency= 'peso' then (cast(a.price as float)/(select c.value from stg.currency c  where c.value is not null and c.money = 'UF' order by date_time desc limit 1))
-                    end) as int) as uf_price, 
+                    a.price,
+                    case
+                        when a.currency = 'peso' or a.currency is null then a.price / (select c.value from stg.currency c  where c.value is not null and c.money = 'UF' order by date_time desc limit 1)
+                        else a.price/100
+                    end as uf_price,
                     a.category_id_fk,
                     p.doc_num,
                     p.pack_id,
@@ -72,7 +72,7 @@ class RePyramidsYapoQuery:
                         a.ad_id_pk,
                         a.ad_id_nk,
                         a.seller_id_fk,
-                        a.price::bigint,
+                        a.price,
                         ap.currency,
                         a.category_id_fk,
                         'real_estate'::text as pack_vertical
