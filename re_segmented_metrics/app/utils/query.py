@@ -467,7 +467,8 @@ class AdViewsQuery:
             SELECT
                 aa.status_date,
                 aa.ad_id_nk,
-                aa.ad_id_fk
+                aa.ad_id_fk,
+                a.list_id_nk
             FROM
                 ods.active_ads AS aa
                 LEFT JOIN

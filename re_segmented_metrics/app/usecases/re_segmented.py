@@ -70,30 +70,21 @@ class RESegmentedQuery(RESegmentedQuery):
         athena.close_connection()
         self.__data_uleads_wo_showphone = data_uleads_clean
 
-    # Write data to data warehouse
-    def save(self) -> None:
-        query = Query(self.config, self.params)
-        db = Database(conf=self.config.db)
-        db.execute_command(query.delete_base())
-        db.insert_data(self.data_athena)
-        db.insert_data(self.data_dwh)
-        db.close_connection()
-
     def insert_naa(self):
         dwh = Database(conf=self.config.db)
-        dwh.insert_copy(self.naa_data, "dm_analysis", "segmented_re_naa")
+        dwh.insert_copy(self.naa_data, "dm_analysis", "re_segmented_naa")
 
     def insert_deleted_ads(self):
         dwh = Database(conf=self.config.db)
-        dwh.insert_copy(self.deleted_ads_data, "dm_analysis", "segmented_re_deleted_ads")
+        dwh.insert_copy(self.deleted_ads_data, "dm_analysis", "re_segmented_deleted_ads")
 
     def insert_uleads_wo_showphone(self):
         dwh = Database(conf=self.config.db)
-        dwh.insert_copy(self.uleads_data, "dm_analysis", "segmented_re_unique_leads_wo_showphone")
+        dwh.insert_copy(self.uleads_data, "dm_analysis", "re_segmented_unique_leads_wo_showphone")
 
     def insert_ad_views(self):
         dwh = Database(conf=self.config.db)
-        dwh.insert_copy(self.ad_views_data, "dm_analysis", "segmented_re_ad_views")
+        dwh.insert_copy(self.ad_views_data, "dm_analysis", "re_segmented_ad_views")
 
     def generate(self):
         self.data_segmented_ads = self.config.db
@@ -112,7 +103,7 @@ class RESegmentedQuery(RESegmentedQuery):
 
         # Deleted ads and SOS
         deleted_ads_data = self.data_segmented_ads[self.data_segmented_ads['deletion_date'] == update_date]\
-            .groupby(['date', 'price_interval', 'platform', 'pri_pro', 'sold_on_site'])\
+            .groupby(['deletion_date', 'price_interval', 'platform', 'pri_pro', 'sold_on_site'])\
             .agg({'list_id': 'count'})\
             .reset_index(drop=False)\
             .rename(columns={'list_id': 'deleted_ads'})
@@ -122,7 +113,7 @@ class RESegmentedQuery(RESegmentedQuery):
         # Unique Leads
         uleads_merge = pd.merge(left=self.data_uleads_wo_showphone,
                                 right=self.data_segmented_ads[['list_id', 'category', 'region', 'commune',
-                                                               'price_interval', 'estate_type']],
+                                                               'price_interval', 'estate_type', 'pri_pro']],
                                 how="inner",
                                 on='list_id')
         self.uleads_data = uleads_merge
@@ -131,7 +122,7 @@ class RESegmentedQuery(RESegmentedQuery):
         # Ad Views
         ad_views_merge = pd.merge(left=self.data_ad_views,
                                right=self.data_segmented_ads[['list_id', 'category', 'region', 'commune',
-                                                              'price_interval', 'estate_type']],
+                                                              'price_interval', 'estate_type', 'pri_pro']],
                                how="inner",
                                on='list_id')
         self.ad_views_data = ad_views_merge
