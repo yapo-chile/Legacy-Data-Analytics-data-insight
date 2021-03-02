@@ -57,7 +57,7 @@ class RePyramidsYapoQuery:
                     a.price::bigint,
                     cast((CASE
                     WHEN a.currency= 'uf' then (cast(a.price as float)/100.0)
-                    when a.currency= 'peso' then (cast(a.price as float)/select * from stg.currency c  where c.value is not null and c.money = 'UF' order by date_time desc limit 1)
+                    when a.currency= 'peso' then (cast(a.price as float)/(select c.value from stg.currency c  where c.value is not null and c.money = 'UF' order by date_time desc limit 1))
                     end) as int) as uf_price, 
                     a.category_id_fk,
                     p.doc_num,
