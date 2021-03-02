@@ -54,7 +54,7 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
 
     def insert_uleads_wo_showphone(self):
         dwh = Database(conf=self.config.db)
-        dwh.insert_copy(self.uleads_data, "dm_analysis", "re_segmented_unique_leads_wo_showphone")
+        dwh.insert_copy(self.uleads_data, "dm_analysis", "re_segmented_unique_leads_wo_showphone_dev")
 
     def generate(self):
         self.data_segmented_ads = self.config.db

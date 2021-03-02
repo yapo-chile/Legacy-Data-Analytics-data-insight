@@ -468,12 +468,18 @@ class AdViewsQuery:
                 aa.status_date,
                 aa.ad_id_nk,
                 aa.ad_id_fk,
-                a.list_id_nk
+                CASE
+                    WHEN a.action_type = 'import' THEN bsd.list_id
+                    ELSE a.list_id_nk
+                END AS list_id
             FROM
                 ods.active_ads AS aa
                 LEFT JOIN
                     ods.ad AS a
                         using(ad_id_nk)
+                LEFT JOIN 
+                    stg.big_sellers_detail AS bsd
+                    ON a.ad_id_nk = bsd.ad_id_nk
                 WHERE
                     a.category_id_fk in (47, 48)
             """

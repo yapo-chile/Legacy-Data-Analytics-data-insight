@@ -54,7 +54,7 @@ class AdViews(AdViewsQuery):
 
     def insert_ad_views(self):
         dwh = Database(conf=self.config.db)
-        dwh.insert_copy(self.ad_views_data, "dm_analysis", "re_segmented_ad_views")
+        dwh.insert_copy(self.ad_views_data, "dm_analysis", "re_segmented_ad_views_dev")
 
     def generate(self):
         self.data_segmented_ads = self.config.db
