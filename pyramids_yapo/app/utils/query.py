@@ -55,10 +55,10 @@ class RePyramidsYapoQuery:
                     a.ad_id_nk,
                     s.email,
                     a.price,
-                    case
-                        when a.currency = 'peso' or a.currency is null then a.price / (select c.value from stg.currency c  where c.value is not null and c.money = 'UF' order by date_time desc limit 1)
-                        else a.price/100
-                    end as uf_price,
+                    cast(case
+                    when a.currency = 'peso' or a.currency is null then a.price / (select c.value from stg.currency c  where c.value is not null and c.money = 'UF' order by date_time desc limit 1)
+                    else a.price/100
+                    end as int) as uf_price,
                     a.category_id_fk,
                     p.doc_num,
                     p.pack_id,
