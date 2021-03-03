@@ -5,7 +5,7 @@ import logging
 import pandas as pd
 from infraestructure.athena import Athena
 from infraestructure.psql import Database
-from utils.uleads_wo_showphone import  UniqueLeadsWithoutShowPhoneQuery
+from utils.query import UniqueLeadsWithoutShowPhoneQuery
 from utils.read_params import ReadParams
 
 
