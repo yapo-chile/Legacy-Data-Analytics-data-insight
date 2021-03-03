@@ -26,7 +26,7 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
     @data_segmented_ads.setter
     def data_segmented_ads(self, config):
         db_source = Database(conf=config)
-        data_segmented_ads_ = db_source.select_to_dict(self.get_segmented_ads)
+        data_segmented_ads_ = db_source.select_to_dict(self.get_segmented_ads())
         data_segmented_ads_clean = data_segmented_ads_ \
             .dropna(subset=['list_id']) \
             .reset_index(drop=True) \
@@ -42,7 +42,7 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
     @data_uleads_wo_showphone.setter
     def data_uleads_wo_showphone(self, config):
         athena = Athena(conf=config)
-        data_uleads_ = athena.get_data(self.get_unique_leads)
+        data_uleads_ = athena.get_data(self.get_unique_leads())
         data_uleads_clean = data_uleads_\
             .dropna(subset=['list_id'])\
             .query("list_id!= 'https'")\

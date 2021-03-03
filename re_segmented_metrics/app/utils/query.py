@@ -116,13 +116,14 @@ class AdViewsQuery:
         """
         return query
 
-    class UniqueLeadsWithoutShowPhoneQuery:
 
-        def __init__(self,
-                     conf: getConf,
-                     params: ReadParams) -> None:
-            self.params = params
-            self.conf = conf
+class UniqueLeadsWithoutShowPhoneQuery:
+
+    def __init__(self,
+                 conf: getConf,
+                 params: ReadParams) -> None:
+        self.params = params
+        self.conf = conf
 
     def get_unique_leads(self) -> str:
 
@@ -237,13 +238,14 @@ class AdViewsQuery:
         """
         return query
 
-    class NewApprovedAdsQuery:
 
-        def __init__(self,
-                     conf: getConf,
-                     params: ReadParams) -> None:
-            self.params = params
-            self.conf = conf
+class NewApprovedAdsQuery:
+
+    def __init__(self,
+                 conf: getConf,
+                 params: ReadParams) -> None:
+        self.params = params
+        self.conf = conf
 
     def get_new_approved_ads(self) -> str:
 
@@ -347,13 +349,14 @@ class AdViewsQuery:
         """
         return query
 
-    class DeletedAdsQuery:
 
-        def __init__(self,
-                     conf: getConf,
-                     params: ReadParams) -> None:
-            self.params = params
-            self.conf = conf
+class DeletedAdsQuery:
+
+    def __init__(self,
+                 conf: getConf,
+                 params: ReadParams) -> None:
+        self.params = params
+        self.conf = conf
 
     def get_deleted_ads(self) -> str:
 
@@ -453,34 +456,35 @@ class AdViewsQuery:
         """
         return query
 
-    class ActiveAdsQuery:
 
-        def __init__(self,
-                     conf: getConf,
-                     params: ReadParams) -> None:
-            self.params = params
-            self.conf = conf
+class ActiveAdsQuery:
 
-        def get_active_ads(self):
+    def __init__(self,
+                 conf: getConf,
+                 params: ReadParams) -> None:
+        self.params = params
+        self.conf = conf
 
-            query = """
-            SELECT
-                aa.status_date,
-                aa.ad_id_nk,
-                aa.ad_id_fk,
-                CASE
-                    WHEN a.action_type = 'import' THEN bsd.list_id
-                    ELSE a.list_id_nk
-                END AS list_id
-            FROM
-                ods.active_ads AS aa
-                LEFT JOIN
-                    ods.ad AS a
-                        using(ad_id_nk)
-                LEFT JOIN 
-                    stg.big_sellers_detail AS bsd
-                    ON a.ad_id_nk = bsd.ad_id_nk
-                WHERE
-                    a.category_id_fk in (47, 48)
-            """
-            return query
+    def get_active_ads(self):
+
+        query = """
+        SELECT
+            aa.status_date,
+            aa.ad_id_nk,
+            aa.ad_id_fk,
+            CASE
+                WHEN a.action_type = 'import' THEN bsd.list_id
+                ELSE a.list_id_nk
+            END AS list_id
+        FROM
+            ods.active_ads AS aa
+            LEFT JOIN
+                ods.ad AS a
+                    using(ad_id_nk)
+            LEFT JOIN 
+                stg.big_sellers_detail AS bsd
+                ON a.ad_id_nk = bsd.ad_id_nk
+            WHERE
+                a.category_id_fk in (47, 48)
+        """
+        return query

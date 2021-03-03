@@ -26,7 +26,7 @@ class AdViews(AdViewsQuery):
     @data_segmented_ads.setter
     def data_segmented_ads(self, config):
         db_source = Database(conf=config)
-        data_segmented_ads_ = db_source.select_to_dict(self.get_segmented_ads)
+        data_segmented_ads_ = db_source.select_to_dict(self.get_segmented_ads())
         data_segmented_ads_clean = data_segmented_ads_\
             .dropna(subset=['list_id'])\
             .reset_index(drop=True)\
@@ -42,7 +42,7 @@ class AdViews(AdViewsQuery):
     @data_ad_views.setter
     def data_ad_views(self, config):
         athena = Athena(conf=config)
-        data_ad_views_ = athena.get_data(self.get_ad_views)
+        data_ad_views_ = athena.get_data(self.get_ad_views())
         data_ad_views_clean = data_ad_views_\
             .dropna(subset=['list_id'])\
             .query("list_id!= 'https'")\

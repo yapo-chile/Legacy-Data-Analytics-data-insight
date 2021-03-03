@@ -24,7 +24,7 @@ class NewApprovedAds(NewApprovedAdsQuery):
     @data_naa.setter
     def data_naa(self, config):
         db_source = Database(conf=config)
-        data_naa_ = db_source.select_to_dict(self.get_new_approved_ads)
+        data_naa_ = db_source.select_to_dict(self.get_new_approved_ads())
         data_naa_clean = data_naa_\
             .dropna(subset=['list_id'])\
             .reset_index(drop=True)\

@@ -24,7 +24,7 @@ class DeletedAds(DeletedAdsQuery):
     @data_deleted_ads.setter
     def data_deleted_ads(self, config):
         db_source = Database(conf=config)
-        data_deleted_ads_ = db_source.select_to_dict(self.get_deleted_ads)
+        data_deleted_ads_ = db_source.select_to_dict(self.get_deleted_ads())
         data_deleted_ads_clean = data_deleted_ads_\
             .dropna(subset=['list_id'])\
             .reset_index(drop=True)\

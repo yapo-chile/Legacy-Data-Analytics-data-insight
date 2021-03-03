@@ -24,7 +24,7 @@ class ActiveAds(ActiveAdsQuery):
     @data_active_ads.setter
     def data_active_ads(self, config):
         db_source = Database(conf=config)
-        data_active_ads_ = db_source.select_to_dict(self.get_active_ads)
+        data_active_ads_ = db_source.select_to_dict(self.get_active_ads())
         data_active_ads_clean = data_active_ads_\
             .dropna(subset=['list_id'])\
             .reset_index(drop=True)\
