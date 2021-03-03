@@ -3,7 +3,7 @@
 
 import logging
 from infraestructure.psql import Database
-from utils.query import DeletedAdsQuery
+from utils.deleted_ads import DeletedAdsQuery
 from utils.read_params import ReadParams
 
 

@@ -5,7 +5,7 @@ import logging
 import pandas as pd
 from infraestructure.athena import Athena
 from infraestructure.psql import Database
-from utils.query import AdViewsQuery
+from utils.ad_views import AdViewsQuery
 from utils.read_params import ReadParams
 
 

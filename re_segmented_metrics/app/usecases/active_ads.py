@@ -3,7 +3,7 @@
 
 import logging
 from infraestructure.psql import Database
-from utils.query import ActiveAdsQuery
+from utils.active_ads import ActiveAdsQuery
 from utils.read_params import ReadParams
 
 
