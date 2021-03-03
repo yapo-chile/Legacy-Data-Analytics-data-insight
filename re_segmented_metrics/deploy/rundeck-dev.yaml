@@ -12,9 +12,9 @@
                         -email_from="noreply@yapo.cl" \
                         -email_to="data_team@adevinta.com"
   executionEnabled: true
-  group: DOCKER/<FOLDER RUNDECK LOCATION>
+  group: DOCKER/INSIGHT
   loglevel: DEBUG
-  name: <FOLDER RUNDECK LOCATION> - Project Name Template
+  name: INSIGHT - RE Segmented Metrics
   nodeFilterEditable: false
   nodefilters:
     dispatch:

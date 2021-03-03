@@ -13,9 +13,9 @@
                     -email_to="email 1 to send data -- if put this options replace default emails to" \
                     -email_to="email n to send data"
   executionEnabled: true
-  group: DOCKER/<FOLDER RUNDECK LOCATION>
+  group: DOCKER/INSIGHT
   loglevel: DEBUG
-  name: <FOLDER RUNDECK LOCATION> - Project Name Template
+  name: INSIGHT - RE Segmented Metrics
   nodeFilterEditable: false
   nodefilters:
     dispatch:
