@@ -21,4 +21,3 @@ if __name__ == '__main__':
     Process(CONFIG, PARAMS, LOGGER).generate()
     # End process
     LOGGER.info('Process ended successfully.')
-# TEST

@@ -17,8 +17,6 @@ class Process:
         self.config = config
         self.params = params
         self.logger = logger
-        # self.logger.info(str(config))
-        # JUST FOR DEBUGGING, IT'S RISKY TO TRY TO PRINT SECRETS (they don't appear, but still)
 
     # Write data to data warehouse
     def save(self) -> None:
@@ -58,7 +56,6 @@ class Process:
 
     def generate(self):
         self.logger.info("All good")
-        # for option in [1, 2, 3]:
         cpu_usage = psutil.cpu_percent(interval=0.5)
         memory_usage = 100*int(psutil.virtual_memory().total - psutil.virtual_memory().available)/int(psutil.virtual_memory().total)
         self.logger.info(
@@ -68,15 +65,8 @@ class Process:
                                            self.params,
                                            self.logger).generate()
         delta = time() - begin
-        cpu_usage_2 = psutil.cpu_percent(interval=0.5)
-        memory_usage_2 = 100 * int(psutil.virtual_memory().total - psutil.virtual_memory().available) / int(
-            psutil.virtual_memory().total)
         self.logger.info(f"----- Total runtime of the option is {delta}")
-        self.logger.info("Total % memory use after ETL: {} - Total % CPU use after ETL: {}".format(memory_usage_2, cpu_usage_2))
-        self.logger.info("Total % memory use variation of ETL: {}".format(((memory_usage_2/memory_usage)-1)*100))
         del cpu_usage
         del memory_usage
-        del cpu_usage_2
-        del memory_usage_2
         del begin
         del delta
