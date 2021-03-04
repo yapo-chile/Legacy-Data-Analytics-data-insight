@@ -38,7 +38,6 @@ class AdViewsQuery:
 
         query = """
         SELECT
-            "date",
             list_id,
             category,
             region,
@@ -56,10 +55,6 @@ class AdViewsQuery:
         FROM
             (
             SELECT
-               CASE
-                    WHEN a.action_type = 'import' THEN bsd.list_time
-                    ELSE a.approval_date::date
-                END AS "date",
                 CASE
                     WHEN a.action_type = 'import' THEN bsd.list_id
                     ELSE a.list_id_nk
@@ -160,7 +155,6 @@ class UniqueLeadsWithoutShowPhoneQuery:
     def get_segmented_ads(self) -> str:
         query = """
         SELECT
-            "date",
             list_id,
             category,
             region,
@@ -178,10 +172,6 @@ class UniqueLeadsWithoutShowPhoneQuery:
         FROM
             (
             SELECT
-               CASE
-                    WHEN a.action_type = 'import' THEN bsd.list_time
-                    ELSE a.approval_date::date
-                END AS "date",
                 CASE
                     WHEN a.action_type = 'import' THEN bsd.list_id
                     ELSE a.list_id_nk

@@ -62,8 +62,7 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
 
         # Unique Leads
         uleads_merge = pd.merge(left=self.data_uleads_wo_showphone,
-                                right=self.data_segmented_ads[['list_id', 'category', 'region', 'commune',
-                                                               'price_interval', 'estate_type', 'pri_pro']],
+                                right=self.data_segmented_ads,
                                 how="inner",
                                 on='list_id')
         self.uleads_data = uleads_merge
