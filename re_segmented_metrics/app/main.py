@@ -17,7 +17,6 @@ if __name__ == '__main__':
     logging.basicConfig(format=LOG_FORMAT, level=logging.INFO)
     PARAMS = ReadParams(sys.argv)
     TIME.get_time()
-
     # Calling main process
     Process(CONFIG, PARAMS, LOGGER).generate()
     # End process
