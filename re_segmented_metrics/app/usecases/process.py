@@ -19,12 +19,6 @@ class Process:
         self.logger = logger
 
     def generate(self):
-        self.uleads_wo_showphone = UniqueLeadsWithoutShowPhone(self.config,
-                                                               self.params,
-                                                               self.logger).generate()
-        self.ad_views = AdViews(self.config,
-                                      self.params,
-                                      self.logger).generate()
         self.naa = NewApprovedAds(self.config,
                                   self.params,
                                   self.logger).generate()
@@ -34,5 +28,11 @@ class Process:
         self.active_ads = ActiveAds(self.config,
                                     self.params,
                                     self.logger).generate()
+        self.uleads_wo_showphone = UniqueLeadsWithoutShowPhone(self.config,
+                                                               self.params,
+                                                               self.logger).generate()
+        self.ad_views = AdViews(self.config,
+                                      self.params,
+                                      self.logger).generate()
 
 
