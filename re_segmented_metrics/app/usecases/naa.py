@@ -25,10 +25,12 @@ class NewApprovedAds(NewApprovedAdsQuery):
     def data_naa(self, config):
         db_source = Database(conf=config)
         data_naa_ = db_source.select_to_dict(self.get_new_approved_ads())
+        self.logger.info(f"NAA dwh dataframe shape: {data_naa_.shape}")
         data_naa_clean = data_naa_\
             .dropna(subset=['list_id'])\
             .reset_index(drop=True)\
             .astype({'list_id': 'int'})
+        self.logger.info(f"NAA clean dataframe shape: {data_naa_clean.shape}")
         db_source.close_connection()
         self.__data_naa = data_naa_clean
 

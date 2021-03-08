@@ -25,10 +25,12 @@ class DeletedAds(DeletedAdsQuery):
     def data_deleted_ads(self, config):
         db_source = Database(conf=config)
         data_deleted_ads_ = db_source.select_to_dict(self.get_deleted_ads())
+        self.logger.info(f"Deleted Ads dwh dataframe shape: {data_deleted_ads_.shape}")
         data_deleted_ads_clean = data_deleted_ads_\
             .dropna(subset=['list_id'])\
             .reset_index(drop=True)\
             .astype({'list_id': 'int'})
+        self.logger.info(f"Deleted Ads clean dataframe shape: {data_deleted_ads_clean.shape}")
         db_source.close_connection()
         self.__data_deleted_ads = data_deleted_ads_clean
 

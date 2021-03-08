@@ -27,10 +27,12 @@ class AdViews(AdViewsQuery):
     def data_segmented_ads(self, config):
         db_source = Database(conf=config)
         data_segmented_ads_ = db_source.select_to_dict(self.get_segmented_ads())
+        self.logger.info(f"RE ads dwh dataframe shape: {data_segmented_ads_.shape}")
         data_segmented_ads_clean = data_segmented_ads_\
             .dropna(subset=['list_id'])\
             .reset_index(drop=True)\
             .astype({'list_id': 'int'})
+        self.logger.info(f"RE ads clean dataframe shape: {data_segmented_ads_clean.shape}")
         db_source.close_connection()
         self.__data_segmented_ads = data_segmented_ads_clean
 
@@ -43,12 +45,14 @@ class AdViews(AdViewsQuery):
     def data_ad_views(self, config):
         athena = Athena(conf=config)
         data_ad_views_ = athena.get_data(self.get_ad_views())
+        self.logger.info(f"Ad-Views RE Athena dataframe shape: {data_ad_views_.shape}")
         data_ad_views_clean = data_ad_views_\
             .dropna(subset=['list_id'])\
             .query("list_id!= 'https'")\
             .reset_index(drop=True) \
             .astype({'list_id': 'int64',
                      'ad_views': 'int64'})
+        self.logger.info(f"Ad-Views RE clean dataframe shape: {data_ad_views_clean.shape}")
         athena.close_connection()
         self.__data_ad_views = data_ad_views_clean
 
@@ -66,6 +70,7 @@ class AdViews(AdViewsQuery):
                                                                  'price_interval', 'estate_type', 'pri_pro']],
                                   how="inner",
                                   on='list_id')
+        self.logger.info(f"Ad-Views merge dataframe shape: {ad_views_merge.shape}")
         self.ad_views_data = ad_views_merge
         self.insert_ad_views()
 

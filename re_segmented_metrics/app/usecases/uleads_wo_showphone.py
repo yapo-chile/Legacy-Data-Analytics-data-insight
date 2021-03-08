@@ -27,10 +27,12 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
     def data_segmented_ads(self, config):
         db_source = Database(conf=config)
         data_segmented_ads_ = db_source.select_to_dict(self.get_segmented_ads())
+        self.logger.info(f"RE ads dwh dataframe shape: {data_segmented_ads_.shape}")
         data_segmented_ads_clean = data_segmented_ads_ \
             .dropna(subset=['list_id']) \
             .reset_index(drop=True) \
             .astype({'list_id': 'int'})
+        self.logger.info(f"RE ads clean dataframe shape: {data_segmented_ads_clean.shape}")
         db_source.close_connection()
         self.__data_segmented_ads = data_segmented_ads_clean
 
@@ -43,12 +45,14 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
     def data_uleads_wo_showphone(self, config):
         athena = Athena(conf=config)
         data_uleads_ = athena.get_data(self.get_unique_leads())
+        self.logger.info(f"Ad-Views RE Athena dataframe shape: {data_uleads_.shape}")
         data_uleads_clean = data_uleads_\
             .dropna(subset=['list_id'])\
             .query("list_id!= 'https'")\
             .reset_index(drop=True) \
             .astype({'list_id': 'int64',
                      'unique_leads': 'int64'})
+        self.logger.info(f"Ad-Views RE clean dataframe shape: {data_uleads_clean.shape}")
         athena.close_connection()
         self.__data_uleads_wo_showphone = data_uleads_clean
 
@@ -65,6 +69,7 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
                                 right=self.data_segmented_ads,
                                 how="inner",
                                 on='list_id')
+        self.logger.info(f"Unique Leads merge dataframe shape: {uleads_merge.shape}")
         self.uleads_data = uleads_merge
         self.insert_uleads_wo_showphone()
 

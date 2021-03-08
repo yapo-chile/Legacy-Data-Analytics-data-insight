@@ -25,10 +25,12 @@ class ActiveAds(ActiveAdsQuery):
     def data_active_ads(self, config):
         db_source = Database(conf=config)
         data_active_ads_ = db_source.select_to_dict(self.get_active_ads())
+        self.logger.info(f"Active Ads dwh dataframe shape: {data_active_ads_.shape}")
         data_active_ads_clean = data_active_ads_\
             .dropna(subset=['list_id'])\
             .reset_index(drop=True)\
             .astype({'list_id': 'int'})
+        self.logger.info(f"Active Ads clean dataframe shape: {data_active_ads_clean.shape}")
         db_source.close_connection()
         self.__data_active_ads = data_active_ads_clean
 
