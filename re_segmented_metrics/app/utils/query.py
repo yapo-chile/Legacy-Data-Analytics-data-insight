@@ -334,7 +334,7 @@ class NewApprovedAdsQuery:
             WHERE
                 a.category_id_fk IN (47,48)
                 AND (CASE WHEN a.action_type = 'import' THEN bsd.list_time 
-                    ELSE a.approval_date::date END) = (MAX a.approval_date FROM ods.ads)--current_date - interval '1' day
+                    ELSE a.approval_date::date END) = (MAX approval_date FROM ods.ads)--current_date - interval '1' day
             ) AS tmp
         """
         return query
