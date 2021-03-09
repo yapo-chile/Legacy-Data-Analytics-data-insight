@@ -33,16 +33,17 @@ class Process:
         self.active_ads = ActiveAds(self.config,
                                     self.params,
                                     self.logger).generate()
-        self.logger.info("Active Ads usecase success")
-        self.logger.info("Unique Leads w/o ShowPhone usecase start")
-        self.uleads_wo_showphone = UniqueLeadsWithoutShowPhone(self.config,
-                                                               self.params,
-                                                               self.logger).generate()
         self.logger.info("Deleted Ads usecase success")
         self.logger.info("Active Ads usecase start")
         self.ad_views = AdViews(self.config,
                                       self.params,
                                       self.logger).generate()
         self.logger.info("Active Ads usecase success")
+        self.logger.info("Active Ads usecase success")
+        self.logger.info("Unique Leads w/o ShowPhone usecase start")
+        self.uleads_wo_showphone = UniqueLeadsWithoutShowPhone(self.config,
+                                                               self.params,
+                                                               self.logger).generate()
+
 
 
