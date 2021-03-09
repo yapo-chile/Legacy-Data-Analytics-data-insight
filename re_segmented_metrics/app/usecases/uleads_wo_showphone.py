@@ -45,14 +45,14 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
     def data_uleads_wo_showphone(self, config):
         athena = Athena(conf=config)
         data_uleads_ = athena.get_data(self.get_unique_leads())
-        self.logger.info(f"Ad-Views RE Athena dataframe shape: {data_uleads_.shape}")
+        self.logger.info(f"Unique Leads RE Athena dataframe shape: {data_uleads_.shape}")
         data_uleads_clean = data_uleads_\
             .dropna(subset=['list_id'])\
             .query("list_id!= 'https'")\
             .reset_index(drop=True) \
             .astype({'list_id': 'int64',
                      'unique_leads': 'int64'})
-        self.logger.info(f"Ad-Views RE clean dataframe shape: {data_uleads_clean.shape}")
+        self.logger.info(f"Unique Leads RE clean dataframe shape: {data_uleads_clean.shape}")
         athena.close_connection()
         self.__data_uleads_wo_showphone = data_uleads_clean
 
