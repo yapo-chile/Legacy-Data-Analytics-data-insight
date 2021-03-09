@@ -62,7 +62,7 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
 
     def generate(self):
         self.data_segmented_ads = self.config.db
-        self.data_ad_views = self.config.athenaConf
+        self.data_uleads_wo_showphone = self.config.athenaConf
 
         # Unique Leads
         uleads_merge = pd.merge(left=self.data_uleads_wo_showphone,
