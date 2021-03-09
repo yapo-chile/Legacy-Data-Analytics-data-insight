@@ -274,7 +274,7 @@ class NewApprovedAdsQuery:
                 CASE 
                     WHEN ip.currency = 'uf' THEN (CAST(a.price AS float)/100.0) 
                     ELSE CAST(a.price AS float) / 
-                        (SELECT a.value FROM stg.currency a WHERE date_time::date = CURRENT_DATE AND a.money = 'UF')
+                        (SELECT c.value FROM stg.currency AS c WHERE c.money = 'UF' ORDER BY date_time DESC LIMIT 1)
                 END AS uf_price,
                 co.comuna_name AS commune,
                 CASE
@@ -301,12 +301,7 @@ class NewApprovedAdsQuery:
                     WHEN bsd.ad_id_nk IS NOT NULL THEN 'Pro'
                     WHEN spd.seller_id_fk IS NULL THEN 'Pri'
                     ELSE 'Pro'
-                END AS pri_pro,
-                a.deletion_date::date AS deletion_date,
-                CASE 
-                    WHEN a.reason_removed_detail_id_fk = 1  THEN 'yes'
-                    WHEN a.deletion_date IS NOT NULL THEN 'no'
-                END AS sold_on_site
+                END AS pri_pro
             FROM
                 ods.ad AS a
                 LEFT JOIN
@@ -318,7 +313,7 @@ class NewApprovedAdsQuery:
                 LEFT JOIN
                     stg.dim_communes_blocket AS co
                     ON a.communes_id_nk::int = co.comuna_id::int
-                INNER JOIN
+                LEFT JOIN
                     ods.ads_inmo_params AS ip 
                     ON a.ad_id_nk = ip.ad_id_nk
                 LEFT JOIN 
@@ -382,7 +377,7 @@ class DeletedAdsQuery:
                 CASE 
                     WHEN ip.currency = 'uf' THEN (CAST(a.price AS float)/100.0) 
                     ELSE CAST(a.price AS float) / 
-                        (SELECT a.value FROM stg.currency a WHERE date_time::date = CURRENT_DATE AND a.money = 'UF')
+                        (SELECT c.value FROM stg.currency AS c WHERE c.money = 'UF' ORDER BY date_time DESC LIMIT 1)
                 END AS uf_price,
                 co.comuna_name AS commune, 
                 CASE
@@ -426,7 +421,7 @@ class DeletedAdsQuery:
                 LEFT JOIN
                     stg.dim_communes_blocket AS co
                     ON a.communes_id_nk::int = co.comuna_id::int
-                INNER JOIN
+                LEFT JOIN
                     ods.ads_inmo_params AS ip 
                     ON a.ad_id_nk = ip.ad_id_nk
                 LEFT JOIN 
