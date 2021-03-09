@@ -72,6 +72,7 @@ class AdViews(AdViewsQuery):
                                   on='list_id')
         self.logger.info(f"Ad-Views merge dataframe shape: {ad_views_merge.shape}")
         self.ad_views_data = ad_views_merge
+        self.logger.info(f'Ads Views dataframe to insert columns/dtypes:\n {self.data_ad_views_data.dtypes}')
         self.insert_ad_views()
 
         return True

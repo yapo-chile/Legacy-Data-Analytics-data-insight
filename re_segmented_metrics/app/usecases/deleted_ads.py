@@ -40,6 +40,7 @@ class DeletedAds(DeletedAdsQuery):
 
     def generate(self):
         self.data_deleted_ads = self.config.db
+        self.logger.info(f'Deleted Ads dataframe to insert columns/dtypes:\n {self.data_deleted_ads.dtypes}')
         self.insert_deleted_ads()
 
         return True

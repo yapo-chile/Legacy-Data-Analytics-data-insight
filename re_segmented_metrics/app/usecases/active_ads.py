@@ -40,6 +40,7 @@ class ActiveAds(ActiveAdsQuery):
 
     def generate(self):
         self.data_active_ads = self.config.db
+        self.logger.info(f'Active Ads dataframe to insert columns/dtypes:\n {self.data_active_ads.dtypes}')
         self.insert_active_ads()
 
         return True

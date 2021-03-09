@@ -71,6 +71,7 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
                                 on='list_id')
         self.logger.info(f"Unique Leads merge dataframe shape: {uleads_merge.shape}")
         self.uleads_data = uleads_merge
+        self.logger.info(f'Unique Leads dataframe to insert columns/dtypes:\n {self.uleads_data.dtypes}')
         self.insert_uleads_wo_showphone()
 
         return True

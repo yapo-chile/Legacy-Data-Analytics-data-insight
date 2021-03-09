@@ -40,7 +40,7 @@ class NewApprovedAds(NewApprovedAdsQuery):
 
     def generate(self):
         self.data_naa = self.config.db
-        self.logger(f'NAA dataframe to insert columns/dtypes:\n {self.data_naa.dtypes}')
+        self.logger.info(f'NAA dataframe to insert columns/dtypes:\n {self.data_naa.dtypes}')
         self.insert_naa()
 
         return True
