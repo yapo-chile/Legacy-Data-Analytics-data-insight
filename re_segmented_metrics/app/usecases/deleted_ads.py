@@ -36,7 +36,7 @@ class DeletedAds(DeletedAdsQuery):
 
     def insert_deleted_ads(self):
         dwh = Database(conf=self.config.db)
-        dwh.insert_copy(self.data_deleted_ads, "dm_analysis", "re_segmented_deleted_ads_dev")
+        dwh.insert_copy("dm_analysis", "re_segmented_deleted_ads_dev", self.data_deleted_ads)
 
     def generate(self):
         self.data_deleted_ads = self.config.db

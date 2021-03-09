@@ -36,7 +36,7 @@ class NewApprovedAds(NewApprovedAdsQuery):
 
     def insert_naa(self):
         dwh = Database(conf=self.config.db)
-        dwh.insert_copy(self.data_naa, "dm_analysis", "re_segmented_naa_dev")
+        dwh.insert_copy("dm_analysis", "re_segmented_naa_dev", self.data_naa)
 
     def generate(self):
         self.data_naa = self.config.db
