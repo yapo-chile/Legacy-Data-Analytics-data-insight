@@ -334,7 +334,7 @@ class NewApprovedAdsQuery:
             WHERE
                 a.category_id_fk IN (47,48)
                 AND (CASE WHEN a.action_type = 'import' THEN bsd.list_time 
-                    ELSE a.approval_date::date END) = (SELECT MAX approval_date::date FROM ods.ads) --current_date - interval '1' day
+                    ELSE a.approval_date::date END) = (SELECT MAX(approval_date::date) FROM ods.ad) --current_date - interval '1' day
             ) AS tmp
         """
         return query
@@ -441,7 +441,7 @@ class DeletedAdsQuery:
                             AND a.category_id_fk = spd.category_id_fk
             WHERE
                 a.category_id_fk IN (47,48)
-                AND a.deletion_date::date = (SELECT MAX deletion_date::date FROM ods.ads) --current_date - interval '1' day
+                AND a.deletion_date::date = (SELECT MAX(deletion_date::date) FROM ods.ad) --current_date - interval '1' day
             ) AS tmp
         """
         return query
