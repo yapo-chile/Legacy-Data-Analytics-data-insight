@@ -58,7 +58,7 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
 
     def insert_uleads_wo_showphone(self):
         dwh = Database(conf=self.config.db)
-        dwh.insert_copy("dm_analysis", "re_segmented_unique_leads_wo_showphone_dev", self.uleads_data)
+        dwh.insert_copy("dm_analysis", "re_segmented_unique_leads_wo_showphone", self.uleads_data)
 
     def generate(self):
         self.data_segmented_ads = self.config.db
@@ -70,8 +70,8 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
                                 how="inner",
                                 on='list_id')
         self.logger.info(f"Unique Leads merge dataframe shape: {uleads_merge.shape}")
-        self.uleads_data = uleads_merge[['event_date', 'list_id', 'unique_leads', 'price_interval', 'category', 'pri_pro',
-                                         'platform', 'estate_type', 'commune', 'region']]
+        self.uleads_data = uleads_merge[['event_date', 'list_id', 'unique_leads', 'price_interval', 'category',
+                                         'pri_pro', 'platform', 'estate_type', 'commune', 'region']]
         self.logger.info(f'Unique Leads dataframe to insert columns/dtypes:\n {self.uleads_data.dtypes}')
         self.insert_uleads_wo_showphone()
 

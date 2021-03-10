@@ -36,7 +36,7 @@ class ActiveAds(ActiveAdsQuery):
 
     def insert_active_ads(self):
         dwh = Database(conf=self.config.db)
-        dwh.insert_copy("dm_analysis", "re_segmented_active_ads_dev", self.data_active_ads)
+        dwh.insert_copy("dm_analysis", "re_segmented_active_ads", self.data_active_ads)
 
     def generate(self):
         self.data_active_ads = self.config.db
