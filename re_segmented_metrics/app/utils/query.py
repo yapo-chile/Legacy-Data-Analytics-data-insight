@@ -39,9 +39,6 @@ class AdViewsQuery:
         query = """
         SELECT
             list_id,
-            category,
-            region,
-            commune,
             case
                 WHEN category = 'Arrendar' THEN 'Arriendo'
                 when uf_price >= 0 AND uf_price < 3000 THEN '0-3000UF'
@@ -50,8 +47,11 @@ class AdViewsQuery:
                 when uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
                 when uf_price >= 9000 THEN '9000UF+'
             END AS price_interval,
+            category,
+            pri_pro,
             estate_type,
-            pri_pro
+            commune,
+            region
         FROM
             (
             SELECT
@@ -156,9 +156,6 @@ class UniqueLeadsWithoutShowPhoneQuery:
         query = """
         SELECT
             list_id,
-            category,
-            region,
-            commune,
             case
                 WHEN category = 'Arrendar' THEN 'Arriendo'
                 when uf_price >= 0 AND uf_price < 3000 THEN '0-3000UF'
@@ -167,8 +164,11 @@ class UniqueLeadsWithoutShowPhoneQuery:
                 when uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
                 when uf_price >= 9000 THEN '9000UF+'
             END AS price_interval,
+            category,
+            pri_pro,
             estate_type,
-            pri_pro
+            commune,
+            region  
         FROM
             (
             SELECT
@@ -241,11 +241,8 @@ class NewApprovedAdsQuery:
 
         query = """
         SELECT
-            "date",
             list_id,
-            category,
-            region,
-            commune,
+            naa_date,
             case
                 WHEN category = 'Arrendar' THEN 'Arriendo'
                 when uf_price >= 0 AND uf_price < 3000 THEN '0-3000UF'
@@ -254,16 +251,19 @@ class NewApprovedAdsQuery:
                 when uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
                 when uf_price >= 9000 THEN '9000UF+'
             END AS price_interval,
-            estate_type,
+            category,
+            pri_pro,
             platform,
-            pri_pro
+            estate_type,
+            commune,
+            region
         FROM
             (
             SELECT
                CASE
                     WHEN a.action_type = 'import' THEN bsd.list_time
                     ELSE a.approval_date::date
-                END AS "date",
+                END AS naa_date,
                 CASE
                     WHEN a.action_type = 'import' THEN bsd.list_id
                     ELSE a.list_id_nk
@@ -347,12 +347,8 @@ class DeletedAdsQuery:
 
         query = """
         SELECT
-            deletion_date,
-            sold_on_site,
             list_id,
-            category,
-            region,
-            commune,
+            deletion_date,
             case
                 WHEN category = 'Arrendar' THEN 'Arriendo'
                 when uf_price >= 0 AND uf_price < 3000 THEN '0-3000UF'
@@ -361,9 +357,13 @@ class DeletedAdsQuery:
                 when uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
                 when uf_price >= 9000 THEN '9000UF+'
             END AS price_interval,
-            estate_type,
+            category,
+            pri_pro,
             platform,
-            pri_pro      
+            estate_type,
+            commune,
+            region,
+            sold_on_site    
         FROM
             (
             SELECT
@@ -436,6 +436,8 @@ class DeletedAdsQuery:
                             AND a.category_id_fk = spd.category_id_fk
             WHERE
                 a.category_id_fk IN (47,48)
+                -- Not Admin deleted or Refuse
+                AND reason_removed_id_fk NOT IN (2,4)
                 AND a.deletion_date::date = (SELECT MAX(deletion_date::date) FROM ods.ad) --current_date - interval '1' day
             ) AS tmp
         """
