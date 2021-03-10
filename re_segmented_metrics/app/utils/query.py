@@ -27,11 +27,12 @@ class AdViewsQuery:
             yapocl_databox.insights_events_behavioral_fact_layer_365d
         where
             CAST(date_parse(CAST(year AS varchar) || '-' || CAST(month AS varchar) || '-' || CAST(day AS varchar),'%Y-%c-%e') AS date)
-                = current_date - interval '1' day
+                BETWEEN DATE('{0}') AND DATE('{1}')
             and event_name = 'Ad detail viewed'
             and (local_category_level1 in ('arrendar','arriendo','comprar') and local_main_category in ('inmuebles'))
         group by 1,2,3
-        """
+        """.format(self.params.get_date_from(),
+                   self.params.get_date_to())
         return query
 
     def get_segmented_ads(self) -> str:
@@ -143,13 +144,14 @@ class UniqueLeadsWithoutShowPhoneQuery:
             yapocl_databox.insights_events_behavioral_fact_layer_365d
         WHERE
             CAST(date_parse(CAST(year AS varchar) || '-' || CAST(month AS varchar) || '-' || CAST(day AS varchar),'%Y-%c-%e') AS date)
-                = current_date - interval '1' day
+                BETWEEN DATE('{0}') AND DATE('{1}')
             AND ad_id != 'sdrn:yapocl:classified:' AND ad_id != 'sdrn:yapocl:classified:0'
             AND event_type IN ('Call','SMS','Send')
             AND (local_category_level1 IN ('arrendar','arriendo','comprar') AND local_main_category IN ('inmuebles'))
             AND lead_id != 'unknown'
         GROUP BY  1,2,3
-        """
+        """.format(self.params.get_date_from(),
+                   self.params.get_date_to())
         return query
 
     def get_segmented_ads(self) -> str:
@@ -329,9 +331,10 @@ class NewApprovedAdsQuery:
             WHERE
                 a.category_id_fk IN (47,48)
                 AND (CASE WHEN a.action_type = 'import' THEN bsd.list_time 
-                    ELSE a.approval_date::date END) = (SELECT MAX(approval_date::date) FROM ods.ad) --current_date - interval '1' day
+                    ELSE a.approval_date::date END) BETWEEN '{0}'::date AND '{1}'::date
             ) AS tmp
-        """
+        """.format(self.params.get_date_from(),
+                   self.params.get_date_to())
         return query
 
 
@@ -438,9 +441,10 @@ class DeletedAdsQuery:
                 a.category_id_fk IN (47,48)
                 -- Not Admin deleted or Refuse
                 AND reason_removed_id_fk NOT IN (2,4)
-                AND a.deletion_date::date = (SELECT MAX(deletion_date::date) FROM ods.ad) --current_date - interval '1' day
+                AND a.deletion_date::date BETWEEN '{0}'::date AND '{1}'::date
             ) AS tmp
-        """
+        """.format(self.params.get_date_from(),
+                   self.params.get_date_to())
         return query
 
 
