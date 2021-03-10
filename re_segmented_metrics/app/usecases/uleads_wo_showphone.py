@@ -70,7 +70,8 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
                                 how="inner",
                                 on='list_id')
         self.logger.info(f"Unique Leads merge dataframe shape: {uleads_merge.shape}")
-        self.uleads_data = uleads_merge
+        self.uleads_data = uleads_merge[['event_date', 'list_id', 'unique_leads', 'price_interval', 'category', 'pri_pro',
+                                         'platform', 'estate_type', 'commune', 'region']]
         self.logger.info(f'Unique Leads dataframe to insert columns/dtypes:\n {self.uleads_data.dtypes}')
         self.insert_uleads_wo_showphone()
 

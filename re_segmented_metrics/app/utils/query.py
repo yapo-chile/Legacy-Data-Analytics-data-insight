@@ -349,6 +349,7 @@ class DeletedAdsQuery:
         SELECT
             list_id,
             deletion_date,
+            sold_on_site,
             case
                 WHEN category = 'Arrendar' THEN 'Arriendo'
                 when uf_price >= 0 AND uf_price < 3000 THEN '0-3000UF'
@@ -362,8 +363,7 @@ class DeletedAdsQuery:
             platform,
             estate_type,
             commune,
-            region,
-            sold_on_site    
+            region   
         FROM
             (
             SELECT
