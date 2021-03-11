@@ -1,6 +1,6 @@
 - defaultTab: nodes
   description: |-
-        <Add specific URL or path of the pipeline in github>
+        Daily pipeline for Real State segmented traffic and content metrics
         sudo docker run --rm --net=host \
                         -v /home/bnbiuser/secrets/pulse_auth:/app/pulse-secret \
                         -v /home/bnbiuser/secrets/dw_db:/app/db-secret \
