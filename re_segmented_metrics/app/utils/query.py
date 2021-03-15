@@ -243,8 +243,8 @@ class NewApprovedAdsQuery:
 
         query = """
         SELECT
-            list_id,
-            naa_date,
+            naa_date::date,
+            list_id::int4,
             case
                 WHEN category = 'Arrendar' THEN 'Arriendo'
                 when uf_price >= 0 AND uf_price < 3000 THEN '0-3000UF'
@@ -350,8 +350,8 @@ class DeletedAdsQuery:
 
         query = """
         SELECT
+            deletion_date::date,
             list_id,
-            deletion_date,
             sold_on_site,
             case
                 WHEN category = 'Arrendar' THEN 'Arriendo'
@@ -460,7 +460,7 @@ class ActiveAdsQuery:
 
         query = """
         SELECT
-            aa.status_date,
+            aa.status_date::date,
             aa.ad_id_nk,
             aa.ad_id_fk,
             CASE
