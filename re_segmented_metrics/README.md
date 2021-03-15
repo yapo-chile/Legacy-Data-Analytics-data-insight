@@ -1,6 +1,6 @@
-# portal-segment pipeline 
+# re_segmented_metrics pipeline 
 
-# portal-segment
+# re_segmented_metrics
 
 ## Description
 
@@ -28,7 +28,7 @@ docker run -v /local-path/secrets/pulse:/app/pulse-secret \
            -v /local-path/secrets/db-secret:/app/db-secret \
            -e APP_PULSE_SECRET=/app/pulse-secret \
            -e APP_DB_SECRET=/app/db-secret \
-           containers.mpi-internal.com/yapo/portal-segment:[TAG]
+           containers.mpi-internal.com/yapo/re_segmented_metrics:[TAG]
 ```
 
 ### Run micro services with parameters
@@ -38,7 +38,7 @@ docker run -v /local-path/secrets/pulse:/app/pulse-secret \
            -v /local-path/secrets/db-secret:/app/db-secret \
            -e APP_PULSE_SECRET=/app/pulse-secret \
            -e APP_DB_SECRET=/app/db-secret \
-           containers.mpi-internal.com/yapo/portal-segment:[TAG] \
+           containers.mpi-internal.com/yapo/re_segmented_metrics:[TAG] \
            -date_from=YYYY-MM-DD \
            -date_to=YYYY-MM-DD
 ```

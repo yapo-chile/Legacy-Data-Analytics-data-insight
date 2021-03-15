@@ -1,21 +1,19 @@
 - defaultTab: nodes
   description: |-
-        <Add specific URL or path of the pipeline in github>
+        Daily pipeline for Real State segmented traffic and content metrics
         sudo docker run --rm --net=host \
                     -v /home/bnbiuser/secrets/pulse_auth:/app/pulse-secret \
                     -v /home/bnbiuser/secrets/dw_db:/app/db-secret \
-                    -v /home/bnbiuser/secrets/smtp:/app/smtp-secret \
                     -e APP_PULSE_SECRET=/app/pulse-secret \
                     -e APP_DB_SECRET=/app/db-secret \
-                    -e APP_SMTP_SECRET=/app/smtp-secret \
-                    containers.mpi-internal.com/yapo/portal-segment:latest \
+                    containers.mpi-internal.com/yapo/re_segmented_metrics:latest \
                     -email_from="noreply@yapo.cl -- if put this options replace default email from" \
                     -email_to="email 1 to send data -- if put this options replace default emails to" \
                     -email_to="email n to send data"
   executionEnabled: true
-  group: DOCKER/<FOLDER RUNDECK LOCATION>
+  group: DOCKER/INSIGHT
   loglevel: DEBUG
-  name: <FOLDER RUNDECK LOCATION> - Project Name Template
+  name: INSIGHT - RE Segmented Metrics
   nodeFilterEditable: false
   nodefilters:
     dispatch:
@@ -41,7 +39,7 @@
   schedule:
     month: '*'
     time:
-      hour: '03'
+      hour: '08'
       minute: '0'
       seconds: '0'
     weekday:
@@ -51,15 +49,13 @@
   sequence:
     commands:
     - script: |-
-        sudo docker pull containers.mpi-internal.com/yapo/portal-segment:latest
+        sudo docker pull containers.mpi-internal.com/yapo/re_segmented_metrics:latest
         sudo docker run --rm --net=host \
                         -v /home/bnbiuser/secrets/pulse_auth:/app/pulse-secret \
                         -v /home/bnbiuser/secrets/dw_db:/app/db-secret \
-                        -v /home/bnbiuser/secrets/smtp:/app/smtp-secret \
                         -e APP_PULSE_SECRET=/app/pulse-secret \
                         -e APP_DB_SECRET=/app/db-secret \
-                        -e APP_SMTP_SECRET=/app/smtp-secret \
-                        containers.mpi-internal.com/yapo/portal-segment:latest \
+                        containers.mpi-internal.com/yapo/re_segmented_metrics:latest \
                         -email_from="noreply@yapo.cl" \
                         -email_to="data_team@adevinta.com"
     keepgoing: false
