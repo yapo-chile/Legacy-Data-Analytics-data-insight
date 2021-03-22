@@ -51,7 +51,9 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
             .query("list_id!= 'https'")\
             .reset_index(drop=True) \
             .astype({'list_id': 'int64',
-                     'unique_leads': 'int64'})
+                     'unique_leads': 'int64'})\
+            .sort_values(by=['event_date', 'price_interval',
+                             'pri_pro', 'platform'])
         self.logger.info(f"Unique Leads RE clean dataframe shape: {data_uleads_clean.shape}")
         athena.close_connection()
         self.__data_uleads_wo_showphone = data_uleads_clean

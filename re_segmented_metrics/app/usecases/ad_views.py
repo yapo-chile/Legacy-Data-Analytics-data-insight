@@ -51,7 +51,9 @@ class AdViews(AdViewsQuery):
             .query("list_id!= 'https'")\
             .reset_index(drop=True) \
             .astype({'list_id': 'int64',
-                     'ad_views': 'int64'})
+                     'ad_views': 'int64'}) \
+            .sort_values(by=['event_date', 'price_interval',
+                             'pri_pro', 'platform'])
         self.logger.info(f"Ad-Views RE clean dataframe shape: {data_ad_views_clean.shape}")
         athena.close_connection()
         self.__data_ad_views = data_ad_views_clean

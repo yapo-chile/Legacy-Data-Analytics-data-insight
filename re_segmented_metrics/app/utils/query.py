@@ -102,10 +102,10 @@ class AdViewsQuery:
                 LEFT JOIN 
                     stg.big_sellers_detail AS bsd
                     ON a.ad_id_nk = bsd.ad_id_nk
-                 LEFT JOIN
+                LEFT JOIN
                     ods.seller_pro_details AS spd
-                        ON a.seller_id_fk = spd.seller_id_fk
-                            AND a.category_id_fk = spd.category_id_fk
+                    ON a.seller_id_fk = spd.seller_id_fk
+                        AND a.category_id_fk = spd.category_id_fk
             WHERE
                 a.category_id_fk IN (47,48)
             ) AS tmp
@@ -220,10 +220,10 @@ class UniqueLeadsWithoutShowPhoneQuery:
                 LEFT JOIN 
                     stg.big_sellers_detail AS bsd
                     ON a.ad_id_nk = bsd.ad_id_nk
-                 LEFT JOIN
+                LEFT JOIN
                     ods.seller_pro_details AS spd
-                        ON a.seller_id_fk = spd.seller_id_fk
-                            AND a.category_id_fk = spd.category_id_fk
+                    ON a.seller_id_fk = spd.seller_id_fk
+                        AND a.category_id_fk = spd.category_id_fk
             WHERE
                 a.category_id_fk IN (47,48)
             ) AS tmp
@@ -252,6 +252,7 @@ class NewApprovedAdsQuery:
                 when uf_price >= 5000 AND uf_price < 7000 THEN '5000-7000UF'
                 when uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
                 when uf_price >= 9000 THEN '9000UF+'
+                ELSE 'Unknown'
             END AS price_interval,
             category,
             pri_pro,
@@ -324,15 +325,17 @@ class NewApprovedAdsQuery:
                 LEFT JOIN 
                     ods.platform AS p 
                     ON a.platform_id_fk = p.platform_id_pk
-                 LEFT JOIN
+                LEFT JOIN
                     ods.seller_pro_details AS spd
-                        ON a.seller_id_fk = spd.seller_id_fk
-                            AND a.category_id_fk = spd.category_id_fk
+                    ON a.seller_id_fk = spd.seller_id_fk
+                        AND a.category_id_fk = spd.category_id_fk
             WHERE
                 a.category_id_fk IN (47,48)
                 AND (CASE WHEN a.action_type = 'import' THEN bsd.list_time 
                     ELSE a.approval_date::date END) BETWEEN '{0}'::date AND '{1}'::date
             ) AS tmp
+        ORDER BY
+            1,3,5
         """.format(self.params.get_date_from(),
                    self.params.get_date_to())
         return query
@@ -361,6 +364,7 @@ class DeletedAdsQuery:
                 when uf_price >= 5000 AND uf_price < 7000 THEN '5000-7000UF'
                 when uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
                 when uf_price >= 9000 THEN '9000UF+'
+                ELSE 'Unknown'
             END AS price_interval,
             category,
             pri_pro,
