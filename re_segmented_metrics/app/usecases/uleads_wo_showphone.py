@@ -51,9 +51,7 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
             .query("list_id!= 'https'")\
             .reset_index(drop=True) \
             .astype({'list_id': 'int64',
-                     'unique_leads': 'int64'})\
-            .sort_values(by=['event_date', 'price_interval',
-                             'pri_pro', 'platform'])
+                     'unique_leads': 'int64'})
         self.logger.info(f"Unique Leads RE clean dataframe shape: {data_uleads_clean.shape}")
         athena.close_connection()
         self.__data_uleads_wo_showphone = data_uleads_clean
@@ -73,7 +71,8 @@ class UniqueLeadsWithoutShowPhone(UniqueLeadsWithoutShowPhoneQuery):
                                 on='list_id')
         self.logger.info(f"Unique Leads merge dataframe shape: {uleads_merge.shape}")
         self.uleads_data = uleads_merge[['event_date', 'list_id', 'unique_leads', 'price_interval', 'category',
-                                         'pri_pro', 'platform', 'estate_type', 'commune', 'region']]
+                                         'pri_pro', 'platform', 'estate_type', 'commune', 'region']]\
+            .sort_values(by=['event_date', 'price_interval', 'pri_pro', 'platform'])
         self.logger.info(f'Unique Leads dataframe to insert columns/dtypes:\n {self.uleads_data.dtypes}')
         self.insert_uleads_wo_showphone()
 

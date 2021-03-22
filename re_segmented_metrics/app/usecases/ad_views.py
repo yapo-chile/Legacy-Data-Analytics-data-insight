@@ -51,9 +51,7 @@ class AdViews(AdViewsQuery):
             .query("list_id!= 'https'")\
             .reset_index(drop=True) \
             .astype({'list_id': 'int64',
-                     'ad_views': 'int64'}) \
-            .sort_values(by=['event_date', 'price_interval',
-                             'pri_pro', 'platform'])
+                     'ad_views': 'int64'})
         self.logger.info(f"Ad-Views RE clean dataframe shape: {data_ad_views_clean.shape}")
         athena.close_connection()
         self.__data_ad_views = data_ad_views_clean
@@ -73,7 +71,8 @@ class AdViews(AdViewsQuery):
                                   on='list_id')
         self.logger.info(f"Ad-Views merge dataframe shape: {ad_views_merge.shape}")
         self.ad_views_data = ad_views_merge[['event_date', 'list_id', 'ad_views', 'price_interval', 'category',
-                                             'pri_pro', 'platform', 'estate_type', 'commune', 'region']]
+                                             'pri_pro', 'platform', 'estate_type', 'commune', 'region']]\
+            .sort_values(by=['event_date', 'price_interval', 'pri_pro', 'platform'])
         self.logger.info(f'Ads Views dataframe to insert columns/dtypes:\n {self.ad_views_data.dtypes}')
         self.insert_ad_views()
 
