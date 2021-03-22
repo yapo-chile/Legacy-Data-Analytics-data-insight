@@ -460,22 +460,60 @@ class ActiveAdsQuery:
 
         query = """
         SELECT
-            aa.status_date::date,
-            aa.ad_id_nk,
-            aa.ad_id_fk,
+            status_date::date,
+            ad_id_nk,
+            ad_id_fk,
+            list_id,
             CASE
-                WHEN a.action_type = 'import' THEN bsd.list_id
-                ELSE a.list_id_nk
-            END AS list_id
+                WHEN category_id_fk = 48 THEN 'Arriendo'
+                WHEN uf_price >= 0 AND uf_price < 3000 THEN '0-3000UF'
+                WHEN uf_price >= 3000 AND uf_price < 5000 THEN '3000-5000UF'
+                WHEN uf_price >= 5000 AND uf_price < 7000 THEN '5000-7000UF'
+                WHEN uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
+                WHEN uf_price >= 9000 THEN '9000UF+'
+                ELSE 'Unknown'
+            END AS price_interval,
+            pri_pro
         FROM
-            ods.active_ads AS aa
-            LEFT JOIN
-                ods.ad AS a
-                    using(ad_id_nk)
-            LEFT JOIN 
-                stg.big_sellers_detail AS bsd
-                ON a.ad_id_nk = bsd.ad_id_nk
-            WHERE
-                a.category_id_fk in (47, 48)
+            (
+            SELECT
+                aa.status_date,
+                aa.ad_id_nk,
+                aa.ad_id_fk,
+                CASE
+                    WHEN a.action_type = 'import' THEN bsd.list_id
+                    ELSE a.list_id_nk
+                END AS list_id,
+                CASE
+                    WHEN bsd.ad_id_nk IS NOT NULL THEN 'Pro'
+                    WHEN spd.seller_id_fk IS NULL THEN 'Pri'
+                    ELSE 'Pro'
+                END AS pri_pro,
+                CASE 
+                    WHEN ip.currency = 'uf' THEN (CAST(a.price AS float)/100.0) 
+                    ELSE CAST(a.price AS float) / 
+                        (SELECT c.value FROM stg.currency AS c WHERE c.money = 'UF' ORDER BY date_time DESC LIMIT 1)
+                END AS uf_price,
+                a.category_id_fk
+            FROM
+                ods.active_ads AS aa
+                LEFT JOIN
+                    ods.ad AS a
+                    ON aa.ad_id_nk = a.ad_id_nk
+                LEFT JOIN 
+                    stg.big_sellers_detail AS bsd
+                    ON aa.ad_id_nk = bsd.ad_id_nk
+                LEFT JOIN
+                    ods.seller_pro_details AS spd
+                    ON a.seller_id_fk = spd.seller_id_fk
+                        AND a.category_id_fk = spd.category_id_fk
+                LEFT JOIN
+                    ods.ads_inmo_params AS ip 
+                    ON a.ad_id_nk = ip.ad_id_nk
+                WHERE
+                    a.category_id_fk in (47, 48)
+            ) AS active_ads
+        ORDER BY 
+            1,5,6
         """
         return query
