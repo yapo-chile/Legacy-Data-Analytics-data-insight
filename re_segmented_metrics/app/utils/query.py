@@ -352,6 +352,7 @@ class DeletedAdsQuery:
         SELECT
             deletion_date::date,
             list_id,
+            reason_removed_name AS reason_removed,
             sold_on_site,
             case
                 WHEN category = 'Arrendar' THEN 'Arriendo'
@@ -412,7 +413,8 @@ class DeletedAdsQuery:
                 CASE 
                     WHEN a.reason_removed_detail_id_fk = 1  THEN 'yes'
                     WHEN a.deletion_date IS NOT NULL THEN 'no'
-                END AS sold_on_site
+                END AS sold_on_site,
+                rr.reason_removed_name
             FROM
                 ods.ad AS a
                 LEFT JOIN
@@ -433,16 +435,21 @@ class DeletedAdsQuery:
                 LEFT JOIN 
                     ods.platform AS p 
                     ON a.platform_id_fk = p.platform_id_pk
-                 LEFT JOIN
+                LEFT JOIN
                     ods.seller_pro_details AS spd
-                        ON a.seller_id_fk = spd.seller_id_fk
-                            AND a.category_id_fk = spd.category_id_fk
+                    ON a.seller_id_fk = spd.seller_id_fk
+                        AND a.category_id_fk = spd.category_id_fk
+                LEFT JOIN
+                    ods.reason_removed AS rr
+                    ON a.reason_removed_id_fk = rr.reason_removed_id_pk
             WHERE
                 a.category_id_fk IN (47,48)
                 -- Not Admin deleted or Refuse
                 AND reason_removed_id_fk NOT IN (2,4)
                 AND a.deletion_date::date BETWEEN '{0}'::date AND '{1}'::date
             ) AS tmp
+        ORDER BY 
+            1,3,4,5,7
         """.format(self.params.get_date_from(),
                    self.params.get_date_to())
         return query
