@@ -10,6 +10,7 @@ from usecases.naa import NewApprovedAds
 
 
 class Process:
+
     def __init__(self,
                  config,
                  params: ReadParams,
@@ -19,10 +20,13 @@ class Process:
         self.logger = logger
 
     def generate(self):
-        self.logger.info("NAA usecase start")
-        self.naa = NewApprovedAds(self.config,
-                                  self.params,
-                                  self.logger).generate()
+
+        self.logger.info("Active Ads usecase success")
+        self.logger.info("Active Ads usecase success")
+        self.logger.info("Unique Leads w/o ShowPhone usecase start")
+        self.uleads_wo_showphone = UniqueLeadsWithoutShowPhone(self.config,
+                                                               self.params,
+                                                               self.logger).generate()
         self.logger.info("Finished. NAA usecase success")
         self.logger.info("Deleted Ads usecase starting")
         self.deleted_ads = DeletedAds(self.config,
@@ -38,12 +42,11 @@ class Process:
         self.ad_views = AdViews(self.config,
                                       self.params,
                                       self.logger).generate()
-        self.logger.info("Active Ads usecase success")
-        self.logger.info("Active Ads usecase success")
-        self.logger.info("Unique Leads w/o ShowPhone usecase start")
-        self.uleads_wo_showphone = UniqueLeadsWithoutShowPhone(self.config,
-                                                               self.params,
-                                                               self.logger).generate()
+        self.logger.info("NAA usecase start")
+        self.naa = NewApprovedAds(self.config,
+                                  self.params,
+                                  self.logger).generate()
+
 
 
 
