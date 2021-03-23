@@ -30,7 +30,7 @@ class DeletedAds(DeletedAdsQuery):
             .dropna(subset=['list_id'])\
             .reset_index(drop=True)\
             .astype({'list_id': 'int'})\
-            .sort_values(by=['deletion_date', 'reason_removed', 'sold_on_site'
+            .sort_values(by=['deletion_date', 'reason_removed', 'sold_on_site',
                              'price_interval', 'pri_pro'])
         self.logger.info(f"Deleted Ads clean dataframe shape: {data_deleted_ads_clean.shape}")
         db_source.close_connection()
