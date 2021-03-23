@@ -102,10 +102,10 @@ class AdViewsQuery:
                 LEFT JOIN 
                     stg.big_sellers_detail AS bsd
                     ON a.ad_id_nk = bsd.ad_id_nk
-                 LEFT JOIN
+                LEFT JOIN
                     ods.seller_pro_details AS spd
-                        ON a.seller_id_fk = spd.seller_id_fk
-                            AND a.category_id_fk = spd.category_id_fk
+                    ON a.seller_id_fk = spd.seller_id_fk
+                        AND a.category_id_fk = spd.category_id_fk
             WHERE
                 a.category_id_fk IN (47,48)
             ) AS tmp
@@ -220,10 +220,10 @@ class UniqueLeadsWithoutShowPhoneQuery:
                 LEFT JOIN 
                     stg.big_sellers_detail AS bsd
                     ON a.ad_id_nk = bsd.ad_id_nk
-                 LEFT JOIN
+                LEFT JOIN
                     ods.seller_pro_details AS spd
-                        ON a.seller_id_fk = spd.seller_id_fk
-                            AND a.category_id_fk = spd.category_id_fk
+                    ON a.seller_id_fk = spd.seller_id_fk
+                        AND a.category_id_fk = spd.category_id_fk
             WHERE
                 a.category_id_fk IN (47,48)
             ) AS tmp
@@ -252,6 +252,7 @@ class NewApprovedAdsQuery:
                 when uf_price >= 5000 AND uf_price < 7000 THEN '5000-7000UF'
                 when uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
                 when uf_price >= 9000 THEN '9000UF+'
+                ELSE 'Unknown'
             END AS price_interval,
             category,
             pri_pro,
@@ -324,15 +325,17 @@ class NewApprovedAdsQuery:
                 LEFT JOIN 
                     ods.platform AS p 
                     ON a.platform_id_fk = p.platform_id_pk
-                 LEFT JOIN
+                LEFT JOIN
                     ods.seller_pro_details AS spd
-                        ON a.seller_id_fk = spd.seller_id_fk
-                            AND a.category_id_fk = spd.category_id_fk
+                    ON a.seller_id_fk = spd.seller_id_fk
+                        AND a.category_id_fk = spd.category_id_fk
             WHERE
                 a.category_id_fk IN (47,48)
                 AND (CASE WHEN a.action_type = 'import' THEN bsd.list_time 
                     ELSE a.approval_date::date END) BETWEEN '{0}'::date AND '{1}'::date
             ) AS tmp
+        ORDER BY
+            1,3,5
         """.format(self.params.get_date_from(),
                    self.params.get_date_to())
         return query
@@ -352,6 +355,7 @@ class DeletedAdsQuery:
         SELECT
             deletion_date::date,
             list_id,
+            reason_removed_name AS reason_removed,
             sold_on_site,
             case
                 WHEN category = 'Arrendar' THEN 'Arriendo'
@@ -360,6 +364,7 @@ class DeletedAdsQuery:
                 when uf_price >= 5000 AND uf_price < 7000 THEN '5000-7000UF'
                 when uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
                 when uf_price >= 9000 THEN '9000UF+'
+                ELSE 'Unknown'
             END AS price_interval,
             category,
             pri_pro,
@@ -412,7 +417,8 @@ class DeletedAdsQuery:
                 CASE 
                     WHEN a.reason_removed_detail_id_fk = 1  THEN 'yes'
                     WHEN a.deletion_date IS NOT NULL THEN 'no'
-                END AS sold_on_site
+                END AS sold_on_site,
+                rr.reason_removed_name
             FROM
                 ods.ad AS a
                 LEFT JOIN
@@ -433,16 +439,21 @@ class DeletedAdsQuery:
                 LEFT JOIN 
                     ods.platform AS p 
                     ON a.platform_id_fk = p.platform_id_pk
-                 LEFT JOIN
+                LEFT JOIN
                     ods.seller_pro_details AS spd
-                        ON a.seller_id_fk = spd.seller_id_fk
-                            AND a.category_id_fk = spd.category_id_fk
+                    ON a.seller_id_fk = spd.seller_id_fk
+                        AND a.category_id_fk = spd.category_id_fk
+                LEFT JOIN
+                    ods.reason_removed AS rr
+                    ON a.reason_removed_id_fk = rr.reason_removed_id_pk
             WHERE
                 a.category_id_fk IN (47,48)
                 -- Not Admin deleted or Refuse
                 AND reason_removed_id_fk NOT IN (2,4)
                 AND a.deletion_date::date BETWEEN '{0}'::date AND '{1}'::date
             ) AS tmp
+        ORDER BY 
+            1,3,4,5,7
         """.format(self.params.get_date_from(),
                    self.params.get_date_to())
         return query
@@ -460,22 +471,60 @@ class ActiveAdsQuery:
 
         query = """
         SELECT
-            aa.status_date::date,
-            aa.ad_id_nk,
-            aa.ad_id_fk,
+            status_date::date,
+            ad_id_nk,
+            ad_id_fk,
+            list_id,
             CASE
-                WHEN a.action_type = 'import' THEN bsd.list_id
-                ELSE a.list_id_nk
-            END AS list_id
+                WHEN category_id_fk = 48 THEN 'Arriendo'
+                WHEN uf_price >= 0 AND uf_price < 3000 THEN '0-3000UF'
+                WHEN uf_price >= 3000 AND uf_price < 5000 THEN '3000-5000UF'
+                WHEN uf_price >= 5000 AND uf_price < 7000 THEN '5000-7000UF'
+                WHEN uf_price >= 7000 AND uf_price < 9000 THEN '7000-9000UF'
+                WHEN uf_price >= 9000 THEN '9000UF+'
+                ELSE 'Unknown'
+            END AS price_interval,
+            pri_pro
         FROM
-            ods.active_ads AS aa
-            LEFT JOIN
-                ods.ad AS a
-                    using(ad_id_nk)
-            LEFT JOIN 
-                stg.big_sellers_detail AS bsd
-                ON a.ad_id_nk = bsd.ad_id_nk
-            WHERE
-                a.category_id_fk in (47, 48)
+            (
+            SELECT
+                aa.status_date,
+                aa.ad_id_nk,
+                aa.ad_id_fk,
+                CASE
+                    WHEN a.action_type = 'import' THEN bsd.list_id
+                    ELSE a.list_id_nk
+                END AS list_id,
+                CASE
+                    WHEN bsd.ad_id_nk IS NOT NULL THEN 'Pro'
+                    WHEN spd.seller_id_fk IS NULL THEN 'Pri'
+                    ELSE 'Pro'
+                END AS pri_pro,
+                CASE 
+                    WHEN ip.currency = 'uf' THEN (CAST(a.price AS float)/100.0) 
+                    ELSE CAST(a.price AS float) / 
+                        (SELECT c.value FROM stg.currency AS c WHERE c.money = 'UF' ORDER BY date_time DESC LIMIT 1)
+                END AS uf_price,
+                a.category_id_fk
+            FROM
+                ods.active_ads AS aa
+                LEFT JOIN
+                    ods.ad AS a
+                    ON aa.ad_id_nk = a.ad_id_nk
+                LEFT JOIN 
+                    stg.big_sellers_detail AS bsd
+                    ON aa.ad_id_nk = bsd.ad_id_nk
+                LEFT JOIN
+                    ods.seller_pro_details AS spd
+                    ON a.seller_id_fk = spd.seller_id_fk
+                        AND a.category_id_fk = spd.category_id_fk
+                LEFT JOIN
+                    ods.ads_inmo_params AS ip 
+                    ON a.ad_id_nk = ip.ad_id_nk
+                WHERE
+                    a.category_id_fk in (47, 48)
+            ) AS active_ads
+        ORDER BY 
+            1,5,6
         """
         return query

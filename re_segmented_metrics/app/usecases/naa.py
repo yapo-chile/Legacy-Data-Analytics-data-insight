@@ -29,7 +29,8 @@ class NewApprovedAds(NewApprovedAdsQuery):
         data_naa_clean = data_naa_\
             .dropna(subset=['list_id'])\
             .reset_index(drop=True)\
-            .astype({'list_id': 'int'})
+            .astype({'list_id': 'int'}) \
+            .sort_values(by=['naa_date', 'price_interval', 'pri_pro'])
         self.logger.info(f"NAA clean dataframe shape: {data_naa_clean.shape}")
         db_source.close_connection()
         self.__data_naa = data_naa_clean

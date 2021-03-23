@@ -29,7 +29,8 @@ class ActiveAds(ActiveAdsQuery):
         data_active_ads_clean = data_active_ads_\
             .dropna(subset=['list_id'])\
             .reset_index(drop=True)\
-            .astype({'list_id': 'int'})
+            .astype({'list_id': 'int'})\
+            .sort_values(by=['status_date', 'price_interval', 'pri_pro'])
         self.logger.info(f"Active Ads clean dataframe shape: {data_active_ads_clean.shape}")
         db_source.close_connection()
         self.__data_active_ads = data_active_ads_clean

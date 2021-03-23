@@ -40,7 +40,7 @@
     month: '*'
     time:
       hour: '08'
-      minute: '0'
+      minute: '40'
       seconds: '0'
     weekday:
       day: '*'
