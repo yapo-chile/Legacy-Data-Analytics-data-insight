@@ -1,6 +1,6 @@
 - defaultTab: nodes
   description: |-
-        Check stuff
+        API Real Estate daily data collection pipeline
         sudo docker run --rm --net=host \
                         -v /home/bnbiuser/secrets/pulse_auth:/app/pulse-secret \
                         -v /home/bnbiuser/secrets/dw_db:/app/db-secret \
