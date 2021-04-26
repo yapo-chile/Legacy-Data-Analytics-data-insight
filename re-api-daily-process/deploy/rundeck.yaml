@@ -40,7 +40,7 @@
   schedule:
     month: '*'
     time:
-      hour: '03'
+      hour: '08'
       minute: '0'
       seconds: '0'
     weekday:
