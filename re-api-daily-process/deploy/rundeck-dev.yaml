@@ -7,7 +7,6 @@
                         -v /home/bnbiuser/secrets/smtp:/app/smtp-secret \
                         -e APP_PULSE_SECRET=/app/pulse-secret \
                         -e APP_DB_SECRET=/app/db-secret \
-                        -e APP_SMTP_SECRET=/app/smtp-secret \
                         containers.mpi-internal.com/yapo/portal-segment:etl_api_inmobiliaria \
                         -email_from="noreply@yapo.cl" \
                         -email_to="data_team@adevinta.com"
@@ -37,7 +36,6 @@
                         -v /home/bnbiuser/secrets/smtp:/app/smtp-secret \
                         -e APP_PULSE_SECRET=/app/pulse-secret \
                         -e APP_DB_SECRET=/app/db-secret \
-                        -e APP_SMTP_SECRET=/app/smtp-secret \
                         containers.mpi-internal.com/yapo/re-api-daily-process:etl_api_inmobiliaria \
                         -email_from="noreply@yapo.cl" \
                         -email_to="data_team@adevinta.com"
