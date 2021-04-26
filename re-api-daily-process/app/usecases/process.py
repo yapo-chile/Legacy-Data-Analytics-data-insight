@@ -70,3 +70,4 @@ class Process:
         del memory_usage
         del begin
         del delta
+
