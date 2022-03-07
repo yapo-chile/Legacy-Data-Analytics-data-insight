@@ -130,16 +130,16 @@ class ReadParams:
         current_date = datetime.datetime.now()
         if self.date_from is None:
             temp_date = current_date + timedelta(days=-1)
-            self.date_from = temp_date
+            self.date_from = temp_date.date()
         if self.date_to is None:
             temp_date = current_date + timedelta(days=-1)
-            self.date_to = temp_date
+            self.date_to = temp_date.date()
         if self.master is None:
             self.master = 'local'
         if self.email_from is None:
-            self.email_from = "noreply@yapo.cl"
+            self.email_from = 'noreply@yapo.cl'
         if self.email_to == []:
-            self.email_to = ['data_team@adevinta.com']
+            self.email_to = ['gp_data_analytics@yapo.cl']
 
         self.logger.info('Date from : %s', self.date_from)
         self.logger.info('Date to   : %s', self.date_to)

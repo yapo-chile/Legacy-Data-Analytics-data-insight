@@ -29,7 +29,7 @@
   sequence:
     commands:
     - script: |-
-        sudo docker pull containers.mpi-internal.com/yapo/re-api-daily-process:etl_api_inmobiliaria
+        docker pull containers.mpi-internal.com/yapo/re-api-daily-process:etl_api_inmobiliaria
         sudo docker run --rm --net=host \
                         -v /home/bnbiuser/secrets/pulse_auth:/app/pulse-secret \
                         -v /home/bnbiuser/secrets/dw_db:/app/db-secret \
