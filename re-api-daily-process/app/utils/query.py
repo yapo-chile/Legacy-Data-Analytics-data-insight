@@ -74,25 +74,23 @@ class Query:
         Method return str with query of enriched ads parameters
         """
         return """select 
-            PARSE_DATE("%Y%m%d", event_date) as timedate,
-            (select value.int_value FROM UNNEST (event_params) WHERE key ='object_ad_id') AS list_id,
-            event_name,
-            count(*) count
-        FROM
-            `{ANALYTICS_SCHEMA}.events_{DATE}` a
-        where
-            event_name='Ad detail viewed'
-        and (`{ANALYTICS_SCHEMA}`.GetCategory((SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'object_categories_string'and value.string_value!='[{{"level":0,"id":null}},{{"level":1,"id":null}}]'),1))in (1220,1240)
-        group by 1,2,3
-        union all
-        select 
-            PARSE_DATE("%Y%m%d", event_date) as timedate,
-            (select value.int_value FROM UNNEST (event_params) WHERE key ='object_ad_id') AS list_id,
-            event_name,
-            count(*) count
-        FROM
-            `{ANALYTICS_SCHEMA}.events_{DATE}` a
-        INNER JOIN `meta.active_lead_name_events` e on event_name = e.name
-        where 
-            (`{ANALYTICS_SCHEMA}`.GetCategory((SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'object_categories_string'and value.string_value!='[{{"level":0,"id":null}},{{"level":1,"id":null}}]'),1))in (1220,1240)
-        group by 1,2,3""".format(ANALYTICS_SCHEMA=self.config.gbq.analytics_schema, DATE=date)
+                PARSE_DATE("%Y%m%d", event_date) as timedate,
+                object_ad_id AS list_id,
+                event_name,
+                count(*) count
+            FROM
+                `staging.ad_views_{DATE}`
+            -- where
+            --    sub_category in (1220,1240)
+            group by 1,2,3
+            union all
+            select 
+                PARSE_DATE("%Y%m%d", event_date) as timedate,
+                object_ad_id AS list_id,
+                event_name,
+                count(*) count
+            FROM
+                `staging.leads_{DATE}`
+            -- where 
+            --    sub_category in (1220,1240)
+            group by 1,2,3""".format(ANALYTICS_SCHEMA=self.config.gbq.analytics_schema, DATE=date)

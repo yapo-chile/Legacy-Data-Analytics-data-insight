@@ -108,6 +108,7 @@ class InmoAPI(Query):
                 row['number_of_ad_replies'] = row['count']
             return row
         data = data.apply(parse_counts, axis=1)
+        data = data.drop_duplicates()
 
         self.insert_to_dwh(data[['email', 'list_id', 'date', 'estate_type_name', 'rooms',
                     'bathrooms', 'currency', 'price',
