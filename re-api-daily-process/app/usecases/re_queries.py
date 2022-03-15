@@ -20,8 +20,7 @@ class InmoAPI(Query):
         self.logger = logger
         self.emails = ''
         self.total_rows = 0
-        # self.schema = "dm_analysis"
-        self.schema = 'temp'
+        self.schema = "dm_analysis"
         self.target_table = "real_estate_api_daily_yapo"
 
     @property
@@ -108,13 +107,14 @@ class InmoAPI(Query):
                 row['number_of_ad_replies'] = row['count']
             return row
         data = data.apply(parse_counts, axis=1)
-        data = data.drop_duplicates()
-
-        self.insert_to_dwh(data[['email', 'list_id', 'date', 'estate_type_name', 'rooms',
+        data = data[['email', 'list_id', 'date', 'estate_type_name', 'rooms',
                     'bathrooms', 'currency', 'price',
                     'link_type', 'number_of_views','number_of_calls',
                     'number_of_call_whatsapp', 'number_of_show_phone', 'number_of_ad_replies',
-                    'external_ad_id' ]])
+                    'external_ad_id' ]]
+        data = data.drop_duplicates()
+
+        self.insert_to_dwh(data)
         print(data[['email', 'list_id', 'date', 'event_name', 'estate_type_name', 'rooms',
                     'bathrooms', 'currency', 'price',
                     'link_type', 'number_of_views','number_of_calls',
